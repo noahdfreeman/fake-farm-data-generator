@@ -121,6 +121,9 @@ total records, and runtime before execution.
 
 Two clearly labeled fake datasets are available:
 
+- [Three demo field boundaries](docs/demo/Field_Examples.zip) — small
+  GeoPackage inputs that can be selected together to try the plugin without
+  supplying your own boundaries.
 - [Quick demonstration run](docs/demo/fake-farm-data-demo.zip) — a 1.9 MB
   download containing two fabricated fields and a compact sample of all four
   data types.
@@ -129,7 +132,7 @@ Two clearly labeled fake datasets are available:
   GeoPackages, shapefiles, and the portable HTML review. It requires about
   8.6 GB of free space when extracted.
 
-Both examples contain no grower identity data. Extract a ZIP and open
+The examples contain no grower identity data. Extract an output ZIP and open
 `fake_farm_data_review.html` in a browser. Keep the HTML file and its companion
 `fake_farm_data_review_data` directory together.
 
