@@ -33,6 +33,9 @@ fi
 
 shopt -s nullglob
 python_candidates=(
+  "$macos/python3"
+  "$macos/python"
+  "$macos"/python3.*
   "$macos/bin/python3"
   "$macos/bin/python"
   "$macos"/bin/python3.*
@@ -64,7 +67,7 @@ export PYTHONNOUSERSITE=1
 export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-offscreen}"
 export PATH="$macos/bin:$PATH"
 
-if [[ "$qgis_python" == "$macos"/bin/* ]]; then
+if [[ "$qgis_python" == "$macos"/* ]]; then
   export PYTHONHOME="${PYTHONHOME:-$macos}"
 else
   unset PYTHONHOME
