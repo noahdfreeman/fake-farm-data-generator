@@ -47,11 +47,18 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertIn("runs-on: macos-14", qgis)
         self.assertIn("brew install --cask qgis", qgis)
         self.assertIn("tools/run_qgis_smoke_macos.sh", qgis)
+        linux_runner = ROOT / "tools" / "run_qgis_smoke_linux.sh"
+        linux_text = linux_runner.read_text(encoding="utf-8")
+        self.assertIn("QGIS_SMOKE_OK", linux_text)
+        self.assertIn("PIPESTATUS[0]", linux_text)
         macos_runner = ROOT / "tools" / "run_qgis_smoke_macos.sh"
         self.assertTrue(macos_runner.is_file())
         macos_text = macos_runner.read_text(encoding="utf-8")
         self.assertIn("QGIS_PREFIX_PATH", macos_text)
         self.assertIn("Contents/Resources", macos_text)
+        self.assertIn('"$macos"/python3.*', macos_text)
+        self.assertIn("Resources/Python.app/Contents/MacOS/Python", macos_text)
+        self.assertIn("processing/core/Processing.py", macos_text)
         self.assertIn("tests/qgis_smoke_test.py", macos_text)
         release = (workflows / "release.yml").read_text(encoding="utf-8")
         self.assertIn("tools/verify_release_version.py", release)

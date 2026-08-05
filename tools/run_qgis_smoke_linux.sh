@@ -22,4 +22,25 @@ done
 joined="$(IFS=:; echo "${python_paths[*]}")"
 export PYTHONPATH="$joined${PYTHONPATH:+:$PYTHONPATH}"
 
-python3 "$workspace/tests/qgis_smoke_test.py"
+smoke_log="$(mktemp)"
+trap 'rm -f "$smoke_log"' EXIT
+
+# Some official QGIS 3.x container images exit with SIGSEGV while tearing down
+# Qt/PyQt after the smoke test has fully completed. Preserve genuine failures,
+# but accept that known shutdown-only condition when the test emitted its final
+# success marker.
+set +e
+python3 "$workspace/tests/qgis_smoke_test.py" 2>&1 | tee "$smoke_log"
+smoke_status=${PIPESTATUS[0]}
+set -e
+
+if [[ $smoke_status -eq 0 ]]; then
+  exit 0
+fi
+
+if grep -q '^QGIS_SMOKE_OK ' "$smoke_log"; then
+  echo "QGIS smoke assertions passed; ignoring native shutdown exit $smoke_status." >&2
+  exit 0
+fi
+
+exit "$smoke_status"

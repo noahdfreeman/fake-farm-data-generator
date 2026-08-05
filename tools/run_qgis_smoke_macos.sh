@@ -33,11 +33,17 @@ fi
 
 shopt -s nullglob
 python_candidates=(
+  "$macos/python3"
+  "$macos/python"
+  "$macos"/python3.*
   "$macos/bin/python3"
   "$macos/bin/python"
   "$macos"/bin/python3.*
   "$contents/Frameworks/Python.framework/Versions/Current/bin/python3"
   "$contents/Frameworks/Python.framework/Versions/Current/bin/python"
+  "$contents"/Frameworks/Python.framework/Versions/*/bin/python3
+  "$contents"/Frameworks/Python.framework/Versions/*/bin/python
+  "$contents"/Frameworks/Python.framework/Versions/*/Resources/Python.app/Contents/MacOS/Python
 )
 shopt -u nullglob
 
@@ -57,10 +63,15 @@ fi
 
 export FAKE_FARM_PLUGIN_PARENT="$workspace"
 export QGIS_PREFIX_PATH="$macos"
-export PYTHONHOME="${PYTHONHOME:-$macos}"
 export PYTHONNOUSERSITE=1
 export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-offscreen}"
 export PATH="$macos/bin:$PATH"
+
+if [[ "$qgis_python" == "$macos"/* ]]; then
+  export PYTHONHOME="${PYTHONHOME:-$macos}"
+else
+  unset PYTHONHOME
+fi
 
 python_paths=("$workspace")
 for candidate in \
@@ -72,6 +83,15 @@ for candidate in \
     python_paths+=("$candidate")
   fi
 done
+
+# QGIS 4 macOS packages may place the Processing provider outside the older
+# Resources/python/plugins and MacOS/share/qgis/python/plugins locations.
+# Discover the provider by its stable module entry point and add its parent.
+while IFS= read -r plugin_parent; do
+  if [[ ! " ${python_paths[*]} " =~ " $plugin_parent " ]]; then
+    python_paths+=("$plugin_parent")
+  fi
+done < <(find "$contents" -type f -path '*/processing/core/Processing.py' -print 2>/dev/null | sed 's|/processing/core/Processing.py$||')
 joined_python_path="$(IFS=:; echo "${python_paths[*]}")"
 export PYTHONPATH="$joined_python_path${PYTHONPATH:+:$PYTHONPATH}"
 
@@ -104,5 +124,6 @@ fi
 
 echo "QGIS application: $qgis_app"
 echo "QGIS Python: $qgis_python"
+echo "QGIS Python path: $PYTHONPATH"
 "$qgis_python" --version
 "$qgis_python" "$workspace/tests/qgis_smoke_test.py"

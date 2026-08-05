@@ -64,7 +64,10 @@ jobs:
         run: brew install --cask qgis
       - name: Inspect the installed QGIS bundle
         run: |
-          test -d /Applications/QGIS.app/Contents
-          find /Applications/QGIS.app/Contents/MacOS/bin -maxdepth 1 -name 'python*' -print
+          qgis_app="$(find /Applications -maxdepth 1 -type d -name 'QGIS*.app' -print -quit)"
+          test -n "$qgis_app"
+          test -d "$qgis_app/Contents"
+          echo "QGIS application: $qgis_app"
+          find "$qgis_app/Contents" -maxdepth 6 -name 'python*' -print || true
       - name: Run complete plugin smoke test
         run: bash tools/run_qgis_smoke_macos.sh
