@@ -22,6 +22,10 @@ datasets.
 - `fake_farm_data_generator-1.0.0.zip` — install through QGIS **Install from ZIP**.
 - `fake-farm-data-demo.zip` — public two-field example with all four data types
   and the portable HTML review.
+- `Fake_Farm_Data_Example.zip` — full four-field, four-year example with all
+  four data types and all selected vector formats. Approximately 368 MB to
+  download and 8.6 GB when extracted.
+- `Fake_Farm_Data_Example.zip.sha256` — checksum for the full example archive.
 - `fake_farm_data_generator-1.0.0.zip.sha256` — plugin archive checksum.
 
 > **FAKE DATA — FOR TESTING AND DEMONSTRATION ONLY — NOT FOR AGRONOMIC DECISIONS**
