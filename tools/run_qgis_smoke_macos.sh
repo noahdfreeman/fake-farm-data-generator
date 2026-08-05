@@ -38,6 +38,9 @@ python_candidates=(
   "$macos"/bin/python3.*
   "$contents/Frameworks/Python.framework/Versions/Current/bin/python3"
   "$contents/Frameworks/Python.framework/Versions/Current/bin/python"
+  "$contents"/Frameworks/Python.framework/Versions/*/bin/python3
+  "$contents"/Frameworks/Python.framework/Versions/*/bin/python
+  "$contents"/Frameworks/Python.framework/Versions/*/Resources/Python.app/Contents/MacOS/Python
 )
 shopt -u nullglob
 
@@ -57,10 +60,15 @@ fi
 
 export FAKE_FARM_PLUGIN_PARENT="$workspace"
 export QGIS_PREFIX_PATH="$macos"
-export PYTHONHOME="${PYTHONHOME:-$macos}"
 export PYTHONNOUSERSITE=1
 export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-offscreen}"
 export PATH="$macos/bin:$PATH"
+
+if [[ "$qgis_python" == "$macos"/bin/* ]]; then
+  export PYTHONHOME="${PYTHONHOME:-$macos}"
+else
+  unset PYTHONHOME
+fi
 
 python_paths=("$workspace")
 for candidate in \
