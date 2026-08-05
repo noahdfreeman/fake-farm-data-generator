@@ -1,8 +1,11 @@
 # Fake Farm Data Generator — V1 project handoff
 
-Updated: 2026-08-05  
-Project status: Paused pending OSGeo account approval and official QGIS Plugin Repository submission  
-Current plugin version: `1.0.0`  
+Updated: 2026-08-05
+
+Project status: Paused pending OSGeo account approval and official QGIS Plugin Repository submission
+
+Current plugin version: `1.0.0`
+
 Current branch: `main`
 
 ## Public project
