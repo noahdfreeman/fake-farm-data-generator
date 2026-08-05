@@ -59,14 +59,19 @@ def verify(expected_tag=""):
     return version
 
 
+def requested_tag(arguments=None, environment=None):
+    arguments = list(sys.argv[1:] if arguments is None else arguments)
+    environment = os.environ if environment is None else environment
+    if arguments:
+        return arguments[0]
+    if environment.get("GITHUB_REF_TYPE", "").casefold() == "tag":
+        return environment.get("GITHUB_REF_NAME", "")
+    return ""
+
+
 def main():
-    requested_tag = (
-        sys.argv[1]
-        if len(sys.argv) > 1
-        else os.environ.get("GITHUB_REF_NAME", "")
-    )
     try:
-        version = verify(requested_tag)
+        version = verify(requested_tag())
     except ValueError as error:
         raise SystemExit(str(error)) from error
     print(f"Release versions agree: {version}")
