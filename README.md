@@ -119,13 +119,19 @@ total records, and runtime before execution.
 
 ## Example data
 
-Download the [public example dataset](docs/demo/fake-farm-data-demo.zip). It
-contains two simple demonstration fields and fake soil, planting, application,
-and yield outputs, plus the portable HTML review. The example contains no grower
-data and is also attached to the V1 GitHub release.
+Two clearly labeled fake datasets are available:
 
-Extract the ZIP and open `fake_farm_data_review.html` in a browser. Keep the
-HTML file and its companion `fake_farm_data_review_data` directory together.
+- [Quick demonstration run](docs/demo/fake-farm-data-demo.zip) — a 1.9 MB
+  download containing two fabricated fields and a compact sample of all four
+  data types.
+- [Full four-field example](https://github.com/noahdfreeman/fake-farm-data-generator/releases/download/v1.0.0/Fake_Farm_Data_Example.zip)
+  — a 368 MB download containing four fields, four years, all four data types,
+  GeoPackages, shapefiles, and the portable HTML review. It requires about
+  8.6 GB of free space when extracted.
+
+Both examples contain no grower identity data. Extract a ZIP and open
+`fake_farm_data_review.html` in a browser. Keep the HTML file and its companion
+`fake_farm_data_review_data` directory together.
 
 ## Output structure
 
