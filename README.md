@@ -163,6 +163,7 @@ without changing the generated fake values.
 - [Output schemas](docs/schemas.md)
 - [Crop lookup and privacy](docs/crop-sources.md)
 - [Outputs and portable review](docs/outputs-and-review.md)
+- [V1 project handoff and QGIS publication checklist](PROJECT_HANDOFF.md)
 - [Contributing](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
