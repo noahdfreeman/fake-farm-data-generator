@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "recipe_type": "fake_farm_data_generator_run",
+  "fake_data": true,
+  "fake_warning": "FAKE DATA - NOT FOR AGRONOMIC DECISIONS",
+  "generator_name": "Fake Farm Data Generator",
+  "generator_version": "1.0.0",
+  "years": [
+    2025
+  ],
+  "field_count": 2,
+  "field_mapping": {
+    "field_id": "field_name",
+    "field_name": "",
+    "farm_name": "",
+    "grower_name": ""
+  },
+  "field_identities": {
+    "Field_001": {
+      "field_id": "West Field",
+      "field_name": "West Field",
+      "farm_name": "",
+      "grower_name": ""
+    },
+    "Field_002": {
+      "field_id": "East Field",
+      "field_name": "East Field",
+      "farm_name": "",
+      "grower_name": ""
+    }
+  },
+  "total_area_acres": 140.1672,
+  "total_area_hectares": 56.7236,
+  "data_types": {
+    "soil": true,
+    "planting": true,
+    "applications": true,
+    "yield": true
+  },
+  "soil_interval": 3,
+  "soil_first_year": 2025,
+  "soil_final_year": 2025,
+  "soil_years": [
+    2025
+  ],
+  "soil_settings": {
+    "placement": "Regular Grid",
+    "sample_density": 10.0,
+    "boundary_setback": 150.0,
+    "grid_rotation": 0.0,
+    "grid_offset_x": 0.0,
+    "grid_offset_y": 0.0,
+    "sample_depth": "0-8 inches",
+    "lab_name": "Test Lab",
+    "fertility_level": "Medium",
+    "variability_level": "Medium",
+    "p_unit": "ppm",
+    "k_unit": "ppm",
+    "sample_date": "11-10",
+    "date_window": 14,
+    "unattributed": false,
+    "create_surface": true,
+    "surface_grid_size": 250.0,
+    "interpolation_method": "Ordinary Kriging",
+    "idw_power": 2.0,
+    "max_neighbors": 12,
+    "kriging_model": "Spherical",
+    "kriging_range": 0.0,
+    "kriging_nugget": 0.0
+  },
+  "planting_settings": {
+    "point_output": "Both",
+    "planter_width": 20.0,
+    "row_units": 2,
+    "row_spacing": 120.0,
+    "target_population": 32000.0,
+    "min_population": 26000.0,
+    "max_population": 38000.0,
+    "seed_depth": 2.0,
+    "nominal_speed": 5.0,
+    "logging_interval": 20.0,
+    "headland_passes": 2,
+    "direction_mode": "Automatic",
+    "manual_bearing": 0.0,
+    "planting_date": "05-01",
+    "date_window": 14,
+    "variability_level": "Medium",
+    "create_surface": true,
+    "surface_grid_size": 250.0,
+    "surface_attributes": [
+      "Population",
+      "Speed",
+      "Seed Spacing",
+      "Seed Depth",
+      "Singulation",
+      "Spacing Quality",
+      "Skips",
+      "Ride Quality",
+      "Ground Contact",
+      "Furrow Moisture",
+      "Furrow Temperature",
+      "Uniform Furrow",
+      "Clean Furrow"
+    ],
+    "crop_profiles": {
+      "Corn": {
+        "min_population": 26000.0,
+        "target_population": 32000.0,
+        "max_population": 38000.0,
+        "seed_depth": 2.0,
+        "planting_date": "05-01"
+      },
+      "Soybeans": {
+        "min_population": 100000.0,
+        "target_population": 140000.0,
+        "max_population": 180000.0,
+        "seed_depth": 1.5,
+        "planting_date": "05-10"
+      },
+      "Wheat": {
+        "min_population": 1000000.0,
+        "target_population": 1500000.0,
+        "max_population": 2000000.0,
+        "seed_depth": 1.25,
+        "planting_date": "10-05"
+      },
+      "Cotton": {
+        "min_population": 30000.0,
+        "target_population": 42000.0,
+        "max_population": 55000.0,
+        "seed_depth": 1.0,
+        "planting_date": "05-10"
+      },
+      "Grain sorghum": {
+        "min_population": 50000.0,
+        "target_population": 70000.0,
+        "max_population": 90000.0,
+        "seed_depth": 1.5,
+        "planting_date": "05-15"
+      },
+      "Barley": {
+        "min_population": 750000.0,
+        "target_population": 1100000.0,
+        "max_population": 1500000.0,
+        "seed_depth": 1.25,
+        "planting_date": "04-10"
+      },
+      "Oats": {
+        "min_population": 750000.0,
+        "target_population": 1100000.0,
+        "max_population": 1500000.0,
+        "seed_depth": 1.25,
+        "planting_date": "04-01"
+      },
+      "Canola": {
+        "min_population": 350000.0,
+        "target_population": 500000.0,
+        "max_population": 650000.0,
+        "seed_depth": 0.75,
+        "planting_date": "04-15"
+      },
+      "Dry beans": {
+        "min_population": 70000.0,
+        "target_population": 95000.0,
+        "max_population": 120000.0,
+        "seed_depth": 1.5,
+        "planting_date": "05-20"
+      },
+      "Sunflowers": {
+        "min_population": 14000.0,
+        "target_population": 22000.0,
+        "max_population": 30000.0,
+        "seed_depth": 1.5,
+        "planting_date": "05-10"
+      },
+      "Alfalfa": {
+        "min_population": 6500000.0,
+        "target_population": 9000000.0,
+        "max_population": 12000000.0,
+        "seed_depth": 0.5,
+        "planting_date": "04-15"
+      },
+      "Other Crop": {
+        "min_population": 26000.0,
+        "target_population": 32000.0,
+        "max_population": 38000.0,
+        "seed_depth": 1.5,
+        "planting_date": "05-01"
+      }
+    }
+  },
+  "yield_settings": {
+    "swath_width": 100.0,
+    "nominal_speed": 4.0,
+    "logging_interval": 30.0,
+    "headland_passes": 3,
+    "headland_penalty": 10.0,
+    "direction_mode": "Automatic",
+    "manual_bearing": 0.0,
+    "harvest_date": "10-15",
+    "date_window": 14,
+    "variability_level": "Medium",
+    "create_surface": true,
+    "surface_grid_size": 250.0,
+    "profile_overrides": {}
+  },
+  "application_operations": [
+    {
+      "enabled": true,
+      "operation_id": "DEMO_VRA_001",
+      "operation_type": "Dry Fertilizer",
+      "product_name": "Fake Demo Blend",
+      "rate_mode": "Variable Rate",
+      "target_rate": 150.0,
+      "min_rate": 100.0,
+      "max_rate": 200.0,
+      "rate_unit": "lb/acre",
+      "base_date": "04-15",
+      "date_window": 14,
+      "timezone": "",
+      "equipment_width": 120.0,
+      "nominal_speed": 10.0,
+      "logging_interval": 20.0,
+      "headland_passes": 2,
+      "direction_mode": "Automatic",
+      "manual_bearing": 0.0,
+      "variability_level": "Medium",
+      "create_surface": true,
+      "surface_grid_size": 250.0,
+      "year": 2025
+    }
+  ],
+  "crop_profile": "Corn",
+  "crop_lookup_mode": "Manual profile",
+  "local_cdl_path": "",
+  "cdl_cache_directory": "",
+  "crop_overrides_json": "",
+  "crop_assignments": {
+    "Field_001:2025": {
+      "crop_name": "Corn",
+      "crop_code": null,
+      "crop_pct": 0.0,
+      "crop_source": "manual",
+      "crop_source_year": 2025,
+      "crop_resolution": null,
+      "crop_lookup_at": "2026-08-05T16:13:24-04:00",
+      "crop_overridden": false,
+      "cdl_class_name": null,
+      "status": "manual",
+      "review_required": false,
+      "valid_agricultural_pixels": 0,
+      "total_pixels": 0
+    },
+    "Field_002:2025": {
+      "crop_name": "Corn",
+      "crop_code": null,
+      "crop_pct": 0.0,
+      "crop_source": "manual",
+      "crop_source_year": 2025,
+      "crop_resolution": null,
+      "crop_lookup_at": "2026-08-05T16:13:24-04:00",
+      "crop_overridden": false,
+      "cdl_class_name": null,
+      "status": "manual",
+      "review_required": false,
+      "valid_agricultural_pixels": 0,
+      "total_pixels": 0
+    }
+  },
+  "master_seed": 20260804,
+  "unit_system": "Imperial",
+  "timezone": "",
+  "output_formats": [
+    "GeoPackage"
+  ],
+  "review_max_features": 1000,
+  "estimates": {
+    "soil_points": 15,
+    "soil_surface_cells": 98,
+    "planter_center_points": 2082,
+    "planting_row_unit_points": 4164,
+    "planting_surface_cells": 98,
+    "application_points": 174,
+    "application_surface_cells": 98,
+    "yield_points": 347,
+    "yield_surface_cells": 98,
+    "total_points": 6782,
+    "total_surface_cells": 392,
+    "total_records": 7174
+  },
+  "estimated_runtime": "about 4s to 10s",
+  "output_directory": "."
+}

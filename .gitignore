@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+_site/
+dist/
+*.gpkg
+*.geojson
+*.tif
+!tests/fixtures/*.geojson
+!docs/demo/sample_run/**/*.gpkg
+!docs/demo/sample_run/**/*.geojson
+!docs/demo/sample_run/**/*.tif
+/Fake_Farm_Data_[0-9]*/

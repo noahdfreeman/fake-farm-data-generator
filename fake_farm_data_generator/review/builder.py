@@ -1,0 +1,263 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Build a file:// compatible Leaflet comparison review for a run folder."""
+
+from __future__ import annotations
+
+import json
+import shutil
+from pathlib import Path
+
+from qgis.core import QgsCoordinateReferenceSystem, QgsJsonExporter, QgsVectorLayer
+
+from ..core.generation import FAKE_WARNING
+from ..core.gpkg_consolidation import spatial_layer_names
+from ..core.review_settings import DEFAULT_REVIEW_MAX_FEATURES, normalize_review_max_features
+
+
+# These values are identical for every record in a run and are already shown in
+# the review banner or summary. They remain in exported datasets, but repeating
+# them in the browser-only payload adds substantial serialization and file size.
+REVIEW_EXCLUDED_FIELDS = frozenset(
+    {
+        "fid",
+        "fake_data",
+        "fake_warning",
+        "generator_name",
+        "generator_version",
+        "run_id",
+        "created_at",
+        "master_seed",
+        "child_seed",
+        "unit_system",
+    }
+)
+
+
+def _export_layer(
+    output,
+    path: Path,
+    relative_path: str,
+    layer_name=None,
+    maximum_features: int = DEFAULT_REVIEW_MAX_FEATURES,
+    feedback=None,
+    leading_comma=False,
+):
+    display_name = layer_name or path.stem
+    uri = f"{path}|layername={layer_name}" if layer_name else str(path)
+    layer = QgsVectorLayer(uri, display_name, "ogr")
+    if not layer.isValid() or layer.featureCount() <= 0:
+        return False
+    total = layer.featureCount()
+    include_all = display_name.startswith("fake_soil_tests_")
+    step = 1 if include_all else max(1, (total + maximum_features - 1) // maximum_features)
+    exporter = QgsJsonExporter(layer)
+    if hasattr(exporter, "setDestinationCrs"):
+        exporter.setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
+    fields = layer.fields()
+    excluded_indexes = {
+        index for index, field in enumerate(fields) if field.name() in REVIEW_EXCLUDED_FIELDS
+    }
+    if hasattr(exporter, "setExcludedAttributes"):
+        exporter.setExcludedAttributes(excluded_indexes)
+    filter_fields = ("field_id", "crop_year", "data_type", "operation_id")
+    filter_values = {}
+    for name in filter_fields:
+        field_index = fields.indexOf(name)
+        values = set()
+        if field_index >= 0:
+            for value in layer.uniqueValues(field_index):
+                if value is not None and str(value).strip():
+                    values.add(str(value))
+        filter_values[name] = values
+    numeric_attributes = sorted(
+        field.name()
+        for index, field in enumerate(fields)
+        if index not in excluded_indexes and field.isNumeric()
+    )
+    record = {
+        "name": display_name,
+        "path": relative_path.replace("\\", "/")
+        + (f"|layername={layer_name}" if layer_name else ""),
+        "total": total,
+        "review_sampling": "all" if step == 1 else "deterministic_interval",
+        "geometry_type": layer.geometryType(),
+        "filter_values": {
+            name: sorted(values, key=lambda value: (not value.isdigit(), value))
+            for name, values in filter_values.items()
+        },
+        "numeric_attributes": numeric_attributes,
+    }
+    if leading_comma:
+        output.write(",")
+    output.write(json.dumps(record, separators=(",", ":"))[:-1])
+    output.write(',"geojson":{"type":"FeatureCollection","features":[')
+    displayed = 0
+    for index, feature in enumerate(layer.getFeatures()):
+        if feedback is not None and index % 1000 == 0 and feedback.isCanceled():
+            raise RuntimeError("Processing canceled during portable-review generation")
+        if index % step == 0:
+            if displayed:
+                output.write(",")
+            output.write(exporter.exportFeature(feature))
+            displayed += 1
+    output.write(']},"displayed":' + str(displayed) + "}")
+    del exporter
+    del layer
+    return True
+
+
+def build_portable_review(
+    run_folder: Path,
+    manifest: dict,
+    maximum_features: int = DEFAULT_REVIEW_MAX_FEATURES,
+    feedback=None,
+) -> tuple[Path, Path]:
+    """Create the HTML review and its local JavaScript/data asset folder."""
+
+    run_folder = Path(run_folder)
+    maximum_features = normalize_review_max_features(maximum_features)
+    manifest["review_max_features"] = maximum_features
+    data_folder = run_folder / "fake_farm_data_review_data"
+    data_folder.mkdir(exist_ok=True)
+    static_source = Path(__file__).resolve().parent / "static"
+    if not static_source.is_dir():
+        raise RuntimeError("Portable review static assets are missing")
+    shutil.copytree(static_source, data_folder / "static", dirs_exist_ok=True)
+    logo_source = (
+        Path(__file__).resolve().parents[1]
+        / "resources"
+        / "fake_farm_data_generator.png"
+    )
+    if not logo_source.is_file():
+        raise RuntimeError("Fake Farm Data Generator logo is missing")
+    shutil.copy2(
+        logo_source,
+        data_folder / "static" / "fake_farm_data_generator.png",
+    )
+    data_path = data_folder / "layers.js"
+    with data_path.open("w", encoding="utf-8", newline="\n") as output:
+        output.write("window.FFDG_LAYERS = [")
+        exported_count = 0
+        for relative in manifest.get("outputs", []):
+            if feedback is not None and feedback.isCanceled():
+                raise RuntimeError("Processing canceled during portable-review generation")
+            if not str(relative).lower().endswith(".gpkg"):
+                continue
+            path = run_folder / relative
+            if path.is_file():
+                for layer_name in spatial_layer_names(path):
+                    exported = _export_layer(
+                        output,
+                        path,
+                        str(relative),
+                        layer_name,
+                        maximum_features,
+                        feedback,
+                        leading_comma=exported_count > 0,
+                    )
+                    if exported:
+                        exported_count += 1
+        output.write("];\n")
+    html_path = run_folder / "fake_farm_data_review.html"
+    html_path.write_text(_html(manifest, run_folder), encoding="utf-8")
+    return html_path, data_folder
+
+
+def _html(manifest: dict, run_folder: Path) -> str:
+    del run_folder
+    summary = {
+        "run_id": manifest.get("run_id"),
+        "years": manifest.get("years", []),
+        "counts": manifest.get("counts", {}),
+        "crop_profile": manifest.get("crop_profile", ""),
+        "field_count": manifest.get("field_count", 0),
+        "total_area_acres": manifest.get("total_area_acres"),
+        "total_area_hectares": manifest.get("total_area_hectares"),
+        "unit_system": manifest.get("unit_system", "Imperial"),
+        "application_operations": len(manifest.get("application_operations", [])),
+    }
+    template = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fake Farm Data Review</title>
+<link rel="stylesheet" href="fake_farm_data_review_data/static/leaflet.css">
+<style>
+:root{--green:#0b5d32;--green-dark:#12351f;--cream:#f7f8f3;--shadow:0 3px 18px #0005}
+html,body{height:100%;margin:0}body{font:14px system-ui,-apple-system,"Segoe UI",sans-serif;color:#172117;overflow:hidden}
+#warning{position:fixed;z-index:3000;top:0;left:0;right:0;height:36px;box-sizing:border-box;padding:9px;text-align:center;background:#a40000;color:#fff;font-weight:800;letter-spacing:.045em}
+#stage{position:fixed;z-index:1;top:36px;right:0;bottom:0;left:0;overflow:hidden;background:#c7cec5}.map{position:absolute;inset:0}
+#rightMap{z-index:1}#leftWrap{position:absolute;z-index:2;inset:0 auto 0 0;width:50%;overflow:hidden;border-right:3px solid #fff;box-shadow:2px 0 8px #0006;box-sizing:border-box}
+#leftMap{width:100vw;height:100%}#swipe{position:absolute;z-index:1001;left:0;top:calc(50% - 24px);width:100%;height:48px;margin:0;opacity:.01;cursor:ew-resize}
+#handle{position:absolute;z-index:1000;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%);border-radius:50%;background:#fff;color:#263226;border:2px solid #263226;display:grid;place-items:center;font-size:24px;font-weight:700;pointer-events:none;box-shadow:0 2px 10px #0007}
+.panel{position:fixed;z-index:2200;background:#fffffff2;padding:12px 14px;border:1px solid #fff;border-radius:10px;box-shadow:var(--shadow)}
+    .panel label{display:block;margin:7px 0 3px;font-size:12px;font-weight:700}.panel select,.panel button{box-sizing:border-box;padding:6px;border:1px solid #798579;border-radius:5px;background:#fff;color:#172117}.panel input[type=range]{width:100%;box-sizing:border-box}.range-label{display:flex!important;justify-content:space-between;align-items:center}.range-label output{font-weight:500;color:#435043}
+#controls{left:12px;top:122px;width:245px;max-height:calc(100vh - 150px);overflow:auto}#controls summary{font-weight:800;cursor:pointer;letter-spacing:.025em}#controls select{width:100%}.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.filter-grid label{margin-top:4px}
+.compare-row{display:flex;align-items:center;gap:6px;margin:10px 0}.compare-row input{margin:0}.compare-row label{display:inline;margin:0;font-size:13px}.reset-button{width:auto;margin-top:2px;font-weight:650}
+.chooser{position:fixed;z-index:2200;bottom:18px;background:#142019ed;color:#fff;padding:10px;border-radius:8px;width:min(340px,42vw);box-shadow:0 2px 10px #0006}.chooser select{width:100%;box-sizing:border-box;padding:6px;margin-top:3px;border:2px solid var(--layer-color,#fff);border-radius:5px;background:#fff;color:#172117}.chooser label{display:block;margin-top:6px;font-size:12px}.chooser b{font-size:12px;letter-spacing:.06em}#leftChooser{left:12px;--layer-color:#a40000}#rightChooser{right:12px;--layer-color:#0b4d91}.count{font-size:11px;margin-top:6px;color:#e5ede5}.legend{display:flex;margin-top:6px;height:14px;border:1px solid #fff8}.legend span{flex:1}.legend-labels{display:flex;justify-content:space-between;font-size:11px}
+#info{right:12px;top:50px;width:340px;max-height:calc(100vh - 76px);overflow:auto}.brand-header{display:flex;align-items:center;gap:12px}.brand-logo{width:92px;height:auto;flex:0 0 auto}.brand-copy{flex:1}.brand-copy h1{margin:0;color:var(--green);font-size:19px;line-height:1.1}.brand-copy p{margin:5px 0 0;font-size:12px;line-height:1.35;color:#435043}.panel-toggle{flex:0 0 auto;align-self:flex-start;min-width:34px;font-size:17px;font-weight:700}.info-content{margin-top:8px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}.stat{padding:7px 9px;border-radius:7px;background:#edf2ea;font-size:11px}.stat strong{display:block;color:var(--green-dark);font-size:16px}.tip{margin:10px 0 0;padding-top:9px;border-top:1px solid #d5ddd2;font-size:12px;line-height:1.4}.collapsed{width:auto!important}.collapsed .brand-logo,.collapsed .brand-copy,.collapsed .info-content{display:none}.fake-popup{max-height:220px;overflow:auto}.empty{padding:8px;color:#ffd5d5}[hidden]{display:none!important}
+.leaflet-container{background:#c7cec5}
+@media(max-width:800px){#info{width:270px}.brand-logo{width:72px}.chooser{width:43vw}.filter-grid{grid-template-columns:1fr}#controls{width:190px;top:116px}}
+</style></head><body>
+<div id="warning">__WARNING__</div>
+<div id="stage"><div id="rightMap" class="map"></div><div id="leftWrap"><div id="leftMap" class="map"></div></div><input id="swipe" type="range" min="0" max="100" value="50" aria-label="Move comparison divider"><div id="handle" aria-hidden="true">&#8596;</div></div>
+<details id="controls" class="panel" open><summary>MAP OPTIONS</summary>
+    <label for="basemap">Basemap</label><select id="basemap"><option>Hybrid</option><option>Satellite</option><option>Streets</option></select>
+    <label for="layerOpacity" class="range-label"><span>Data opacity</span><output id="opacityValue">65%</output></label><input id="layerOpacity" type="range" min="10" max="100" value="65" step="5">
+<label for="fieldFilter">Field</label><select id="fieldFilter"></select>
+<div class="filter-grid"><label>Year<select id="yearFilter"></select></label><label>Data type<select id="dataTypeFilter"></select></label></div>
+<label for="operationFilter">Operation</label><select id="operationFilter"></select>
+<div class="compare-row"><input id="compareToggle" type="checkbox"><label for="compareToggle">Compare layers</label></div><button id="resetExtent" class="reset-button" type="button">Reset extent</button></details>
+<div id="leftChooser" class="chooser"><b>LEFT LAYER</b><select id="leftSelect"></select><label>Attribute<select id="leftAttribute"></select></label><label>Color ramp<select id="leftRamp"><option value="rdylgn">Red-Yellow-Green</option><option value="viridis">Viridis</option><option value="bluered">Blue-Red</option></select></label><div id="leftLegend"></div><div id="leftCount" class="count"></div></div>
+<div id="rightChooser" class="chooser"><b>RIGHT LAYER</b><select id="rightSelect"></select><label>Attribute<select id="rightAttribute"></select></label><label>Color ramp<select id="rightRamp"><option value="rdylgn">Red-Yellow-Green</option><option value="viridis">Viridis</option><option value="bluered">Blue-Red</option></select></label><div id="rightLegend"></div><div id="rightCount" class="count"></div></div>
+    <aside id="info" class="panel"><div class="brand-header"><img class="brand-logo" src="fake_farm_data_review_data/static/fake_farm_data_generator.png" alt="Fake Farm Data Generator"><div class="brand-copy"><h1>Fake Farm Data Review</h1><p>Choose layers and attributes, then drag the center handle to compare them.</p></div><button id="panelToggle" class="panel-toggle" type="button" aria-expanded="true" title="Collapse information">&#8722;</button></div><div class="info-content"><div id="stats" class="stats"></div><p class="tip">All field boundaries remain visible. Click another boundary or use the Field selector to switch fields and zoom directly to it. Exported data remains unchanged.</p></div></aside>
+<script src="fake_farm_data_review_data/static/leaflet.js"></script><script src="fake_farm_data_review_data/layers.js"></script>
+<script>
+const summary=__SUMMARY__,layers=window.FFDG_LAYERS||[],warning=__WARNING_JSON__,boundaryLayers=layers.filter(item=>item.name.startsWith('fake_field_boundaries')),selectableLayers=layers.filter(item=>!item.name.startsWith('fake_field_boundaries'));
+const ramps={rdylgn:['#d73027','#fc8d59','#fee08b','#91cf60','#1a9850'],viridis:['#440154','#3b528b','#21918c','#5ec962','#fde725'],bluered:['#2166ac','#67a9cf','#f7f7f7','#ef8a62','#b2182b']};
+function baseLayer(name){if(name==='Satellite')return L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:20,attribution:'Esri'});if(name==='Hybrid')return L.layerGroup([baseLayer('Satellite'),L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:20,attribution:'Esri'})]);return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:'OpenStreetMap'});}
+const left=L.map('leftMap',{zoomControl:true}).setView([40,-86],12),right=L.map('rightMap',{zoomControl:false}).setView([40,-86],12);left.createPane('boundaries');right.createPane('boundaries');left.getPane('boundaries').style.zIndex=650;right.getPane('boundaries').style.zIndex=650;left.getPane('boundaries').style.pointerEvents='auto';right.getPane('boundaries').style.pointerEvents='auto';let leftBase=baseLayer('Hybrid').addTo(left),rightBase=baseLayer('Hybrid').addTo(right);
+let syncing=false;function sync(a,b){a.on('move zoom',()=>{if(syncing)return;syncing=true;b.setView(a.getCenter(),a.getZoom(),{animate:false});syncing=false})}sync(left,right);sync(right,left);
+function popup(properties){return '<div class="fake-popup"><b>'+warning+'</b><hr>'+Object.entries(properties||{}).slice(0,32).map(([key,value])=>`<b>${key}</b>: ${value}`).join('<br>')+'</div>'}
+const filters={field_id:'',crop_year:'',data_type:'',operation_id:''};
+function filteredFeatures(item){return item.geojson.features.filter(feature=>Object.entries(filters).every(([key,value])=>!value||String((feature.properties||{})[key]??'')===value))}
+function valueRange(features,attribute){const values=features.map(feature=>Number((feature.properties||{})[attribute])).filter(Number.isFinite);return values.length?[Math.min(...values),Math.max(...values)]:null}
+function color(value,limits,ramp){if(!limits||!Number.isFinite(Number(value)))return'#ff7f00';const[minimum,maximum]=limits,position=maximum===minimum?.5:Math.max(0,Math.min(.999999,(Number(value)-minimum)/(maximum-minimum)));return ramps[ramp][Math.floor(position*5)]}
+    let dataOpacity=.65;function layerStyle(side,attribute,limits,ramp,feature){return{color:side==='left'?'#a40000':'#0b4d91',weight:1,opacity:dataOpacity,fillColor:color((feature.properties||{})[attribute],limits,ramp),fillOpacity:dataOpacity,radius:4}}
+function makeLayer(side,item,attribute,ramp){const features=filteredFeatures(item),limits=attribute?valueRange(features,attribute):null,geojson={type:'FeatureCollection',features};return{layer:L.geoJSON(geojson,{style:feature=>layerStyle(side,attribute,limits,ramp,feature),pointToLayer:(feature,latlng)=>L.circleMarker(latlng,layerStyle(side,attribute,limits,ramp,feature)),onEachFeature:(feature,layer)=>layer.bindPopup(popup(feature.properties))}),features,limits}}
+    function preferredAttribute(item){const name=String(item.name||'').toLowerCase(),available=item.numeric_attributes||[];const preferred=name.includes('yield')?'dry_yield':name.includes('planting')?'population':name.includes('application')?'actual_rate':name.includes('soil')?'pH':'';return available.includes(preferred)?preferred:''}
+    function fillAttributes(side,item){const select=document.getElementById(side+'Attribute');select.innerHTML='';select.add(new Option('Default styling',''));for(const name of item.numeric_attributes||[])select.add(new Option(name,name));select.value=preferredAttribute(item)}
+function renderLegend(side,attribute,limits,ramp){const target=document.getElementById(side+'Legend');if(!attribute||!limits){target.innerHTML='';return}target.innerHTML=`<div>${attribute}</div><div class="legend">${ramps[ramp].map(item=>`<span style="background:${item}"></span>`).join('')}</div><div class="legend-labels"><span>${limits[0].toLocaleString(undefined,{maximumFractionDigits:2})}</span><span>${limits[1].toLocaleString(undefined,{maximumFractionDigits:2})}</span></div>`}
+let leftLayer=null,rightLayer=null,leftBoundaryLayer=null,rightBoundaryLayer=null;
+function refreshSide(side,resetAttributes=false){const select=document.getElementById(side+'Select'),item=selectableLayers[Number(select.value)];if(!item)return;const map=side==='left'?left:right,old=side==='left'?leftLayer:rightLayer;if(old)map.removeLayer(old);if(resetAttributes)fillAttributes(side,item);const attribute=document.getElementById(side+'Attribute').value,ramp=document.getElementById(side+'Ramp').value,fresh=makeLayer(side,item,attribute,ramp);fresh.layer.addTo(map);if(side==='left')leftLayer=fresh.layer;else rightLayer=fresh.layer;renderLegend(side,attribute,fresh.limits,ramp);document.getElementById(side+'Count').textContent=`${fresh.features.length.toLocaleString()} shown for selected field · ${item.displayed.toLocaleString()} review sample · ${item.total.toLocaleString()} raw records`}
+    function allBoundaryFeatures(){const seen=new Set(),features=[];for(const item of boundaryLayers)for(const feature of item.geojson.features){const fieldId=String((feature.properties||{}).field_id??'');const key=fieldId+'|'+JSON.stringify(feature.geometry);if(!seen.has(key)){seen.add(key);features.push(feature)}}return features}
+    function pointInRing(lng,lat,ring){let inside=false;for(let index=0,previous=ring.length-1;index<ring.length;previous=index++){const currentPoint=ring[index],previousPoint=ring[previous],xi=Number(currentPoint[0]),yi=Number(currentPoint[1]),xj=Number(previousPoint[0]),yj=Number(previousPoint[1]);if(((yi>lat)!==(yj>lat))&&(lng<(xj-xi)*(lat-yi)/((yj-yi)||Number.EPSILON)+xi))inside=!inside}return inside}
+    function boundaryContains(feature,latlng){const geometry=feature.geometry||{},polygons=geometry.type==='Polygon'?[geometry.coordinates]:geometry.type==='MultiPolygon'?geometry.coordinates:[];for(const polygon of polygons){if(!polygon.length||!pointInRing(latlng.lng,latlng.lat,polygon[0]))continue;let inHole=false;for(let hole=1;hole<polygon.length;hole++)if(pointInRing(latlng.lng,latlng.lat,polygon[hole])){inHole=true;break}if(!inHole)return true}return false}
+    function fieldAtLatLng(latlng){for(const feature of allBoundaryFeatures())if(boundaryContains(feature,latlng))return String((feature.properties||{}).field_id??'');return''}
+    function chooseField(fieldId){if(!fieldId||filters.field_id===fieldId)return;fieldSelect.value=fieldId;filters.field_id=fieldId;refreshAll();zoomToField(fieldId)}
+    function chooseFieldAtLatLng(event){const fieldId=fieldAtLatLng(event.latlng);if(fieldId)chooseField(fieldId)}
+    function refreshBoundaries(){const geojson={type:'FeatureCollection',features:allBoundaryFeatures()},options={pane:'boundaries',interactive:true,bubblingMouseEvents:false,style:feature=>{const selected=String((feature.properties||{}).field_id??'')===filters.field_id;return{color:selected?'#ffe45c':'#ffffff',weight:selected?4:3,opacity:1,fill:false}},onEachFeature:(feature,layer)=>{const fieldId=String((feature.properties||{}).field_id??'');layer.bindTooltip(fieldId,{sticky:true});layer.on('click',event=>{chooseField(fieldId);if(event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent)})}};if(leftBoundaryLayer)left.removeLayer(leftBoundaryLayer);if(rightBoundaryLayer)right.removeLayer(rightBoundaryLayer);leftBoundaryLayer=L.geoJSON(geojson,options).addTo(left);rightBoundaryLayer=L.geoJSON(geojson,options).addTo(right)}
+function refreshAll(){refreshBoundaries();refreshSide('left');refreshSide('right')}
+for(const side of['left','right']){const select=document.getElementById(side+'Select');selectableLayers.forEach((item,index)=>select.add(new Option(item.name,index)));select.onchange=()=>refreshSide(side,true);document.getElementById(side+'Attribute').onchange=()=>refreshSide(side);document.getElementById(side+'Ramp').onchange=()=>refreshSide(side)}
+function uniqueFilterValues(key){const values=new Set();for(const item of(selectableLayers.length?selectableLayers:boundaryLayers))for(const value of(item.filter_values||{})[key]||[])values.add(String(value));return[...values].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))}
+const fieldSelect=document.getElementById('fieldFilter'),fieldValues=uniqueFilterValues('field_id');if(fieldValues.length){for(const value of fieldValues)fieldSelect.add(new Option(value,value));filters.field_id=fieldSelect.value}else{fieldSelect.add(new Option('No field IDs available',''));fieldSelect.disabled=true}
+const filterDefinitions=[['yearFilter','crop_year','All years'],['dataTypeFilter','data_type','All data types'],['operationFilter','operation_id','All operations']];
+for(const[id,key,allLabel]of filterDefinitions){const select=document.getElementById(id);select.add(new Option(allLabel,''));for(const value of uniqueFilterValues(key))select.add(new Option(value,value));select.onchange=()=>{filters[key]=select.value;refreshAll()}}
+function fieldBounds(fieldId){let matching=[];for(const item of(boundaryLayers.length?boundaryLayers:layers)){for(const feature of item.geojson.features){if(String((feature.properties||{}).field_id??'')===fieldId)matching.push(feature)}}if(!matching.length)return null;const temporary=L.geoJSON({type:'FeatureCollection',features:matching}),bounds=temporary.getBounds();temporary.clearLayers();return bounds.isValid()?bounds:null}
+function zoomToField(fieldId){const bounds=fieldBounds(fieldId);if(bounds){left.fitBounds(bounds,{padding:[28,28],animate:false,maxZoom:18});right.setView(left.getCenter(),left.getZoom(),{animate:false});return true}return false}
+fieldSelect.onchange=()=>{filters.field_id=fieldSelect.value;refreshAll();zoomToField(fieldSelect.value)};
+left.on('click',chooseFieldAtLatLng);right.on('click',chooseFieldAtLatLng);
+if(selectableLayers.length){document.getElementById('rightSelect').value=Math.min(1,selectableLayers.length-1);fillAttributes('left',selectableLayers[0]);fillAttributes('right',selectableLayers[Math.min(1,selectableLayers.length-1)]);refreshAll();if(!zoomToField(filters.field_id)){const bounds=leftLayer&&leftLayer.getBounds();if(bounds&&bounds.isValid())left.fitBounds(bounds,{padding:[28,28]})}}else{refreshBoundaries();for(const side of['left','right'])document.getElementById(side+'Count').innerHTML='<div class="empty">No generated data layers were available.</div>'}
+const swipe=document.getElementById('swipe'),handle=document.getElementById('handle'),leftWrap=document.getElementById('leftWrap'),rightChooser=document.getElementById('rightChooser');function moveDivider(){leftWrap.style.width=swipe.value+'%';handle.style.left=swipe.value+'%'}swipe.oninput=moveDivider;
+function setCompare(enabled){swipe.hidden=!enabled;handle.hidden=!enabled;rightChooser.hidden=!enabled;leftWrap.style.width=enabled?swipe.value+'%':'100%';leftWrap.style.borderRight=enabled?'3px solid #fff':'0';leftWrap.style.boxShadow=enabled?'2px 0 8px #0006':'none';right.getContainer().setAttribute('aria-hidden',enabled?'false':'true');setTimeout(()=>{left.invalidateSize(false);right.invalidateSize(false)},0)}
+document.getElementById('compareToggle').onchange=event=>setCompare(event.target.checked);setCompare(false);
+    document.getElementById('basemap').onchange=event=>{left.removeLayer(leftBase);right.removeLayer(rightBase);leftBase=baseLayer(event.target.value).addTo(left);rightBase=baseLayer(event.target.value).addTo(right);leftBase.bringToBack?.();rightBase.bringToBack?.()};
+    document.getElementById('layerOpacity').oninput=event=>{dataOpacity=Number(event.target.value)/100;document.getElementById('opacityValue').textContent=event.target.value+'%';refreshSide('left');refreshSide('right')};
+document.getElementById('resetExtent').onclick=()=>{if(!zoomToField(filters.field_id)){const bounds=[];for(const layer of[leftLayer,rightLayer])if(layer&&layer.getBounds().isValid())bounds.push(layer.getBounds());if(bounds.length){const combined=bounds.slice(1).reduce((acc,item)=>acc.extend(item),bounds[0]);left.fitBounds(combined,{padding:[28,28]});right.setView(left.getCenter(),left.getZoom())}}};
+document.getElementById('panelToggle').onclick=function(){const panel=document.getElementById('info'),collapsed=panel.classList.toggle('collapsed');this.setAttribute('aria-expanded',collapsed?'false':'true');this.setAttribute('title',collapsed?'Expand information':'Collapse information');this.innerHTML=collapsed?'&#43;':'&#8722;'};
+const fieldCount=summary.field_count||fieldValues.length,recordCount=Object.values(summary.counts).reduce((total,value)=>total+(Number(value)||0),0),areaOptions={minimumFractionDigits:1,maximumFractionDigits:1},area=summary.unit_system==='Metric'&&summary.total_area_hectares!=null?`${Number(summary.total_area_hectares).toLocaleString(undefined,areaOptions)} ha`:summary.total_area_acres!=null?`${Number(summary.total_area_acres).toLocaleString(undefined,areaOptions)} acres`:'',stats=[['Fields in run',fieldCount.toLocaleString()],['Area',area||'Not recorded'],['Data layers',selectableLayers.length.toLocaleString()],['Years',summary.years.length.toLocaleString()],['Records',recordCount.toLocaleString()],['Operations',summary.application_operations.toLocaleString()]];
+document.getElementById('stats').innerHTML=stats.map(([label,value])=>`<div class="stat"><strong>${value}</strong>${label}</div>`).join('');window.addEventListener('resize',()=>{left.invalidateSize(false);right.invalidateSize(false)});
+</script></body></html>"""
+    return (
+        template.replace("__WARNING__", FAKE_WARNING)
+        .replace("__WARNING_JSON__", json.dumps(FAKE_WARNING))
+        .replace("__SUMMARY__", json.dumps(summary, separators=(",", ":")))
+    )

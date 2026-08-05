@@ -1,0 +1,6 @@
+title: Fake Farm Data Generator
+description: QGIS plugin for clearly labeled fake precision-agriculture data
+theme: minima
+markdown: kramdown
+exclude:
+  - demo/README.md
