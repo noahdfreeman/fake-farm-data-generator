@@ -7,6 +7,12 @@ title: Demonstration run
 
 > **FAKE DATA — FOR TESTING AND DEMONSTRATION ONLY — NOT FOR AGRONOMIC DECISIONS**
 
+## Demo field inputs
+
+[Download three example field boundaries](Field_Examples.zip) to run the plugin
+without supplying your own data. The ZIP contains three GeoPackages with one
+unique field in each file and no grower, farm, or owner identity information.
+
 This deliberately small run uses fabricated field boundaries, the manual Corn
 profile, and a fixed seed. It contains soil-test points with ordinary-kriging
 surfaces, planting center and row-unit logs, a variable-rate dry-fertilizer

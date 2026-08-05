@@ -20,6 +20,8 @@ datasets.
 ## Release assets
 
 - `fake_farm_data_generator-1.0.0.zip` — install through QGIS **Install from ZIP**.
+- `Field_Examples.zip` — three GeoPackage field-boundary inputs for trying the
+  plugin without supplying your own boundaries.
 - `fake-farm-data-demo.zip` — public two-field example with all four data types
   and the portable HTML review.
 - `Fake_Farm_Data_Example.zip` — full four-field, four-year example with all
