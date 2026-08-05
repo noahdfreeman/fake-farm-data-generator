@@ -27,7 +27,7 @@ current source, tests, or packaged plugin demonstrates it.
 | 15 | Permanent fake-data labeling | Complete | Schemas, manifests, README warning, review banner, and package tests |
 | 16 | Portable filtered split-comparison review | Complete | Bundled branded Leaflet review, compare-off startup, permanent clickable background boundaries, county-tool-style center handle, left-layer-only mode, single-field filtering/zoom, tenths-rounded area, and generated HTML/data assertions |
 | 17 | All soil points; sampled high-volume display only | Complete | Configurable review-limit tests and live displayed/total assertions |
-| 18 | Unit, integration, viewer, packaging, compatibility checks | Partial | 81 unit tests, the Windows QGIS 3.44.6 full smoke assertions, and a direct isolated-worker review run pass for v1.0.0. The official Linux QGIS 3.34/3.40/3.44/4.2 matrix remains the earlier baseline until v1.0.0 is rerun through every target. A current-QGIS macOS workflow is prepared but has not yet run in GitHub Actions |
+| 18 | Unit, integration, viewer, packaging, compatibility checks | Complete | 82 unit tests, Windows QGIS 3.44.6 full smoke assertions, and complete GitHub smoke runs on official QGIS 3.34/3.40/3.44/4.2 Linux images plus current macOS QGIS 4.0.3 |
 | 19 | Installation, usage, schema, contribution, license, release docs | Complete | Dedicated Pages-ready documentation plus README, specification, changelog, contribution guide, license, templates, and release workflows |
 | 20 | GitHub Pages documentation and demo | Complete | Public repository, Pages workflow, screenshot documentation, downloadable example ZIP, and interactive all-generator demo are included in the V1 publication |
 
@@ -45,8 +45,8 @@ Live validation currently uses:
 - Windows QGIS 3.40.14 LTR through `python-qgis-ltr.bat`
 - Windows QGIS 3.44.6 through `python-qgis.bat`
 - Official Linux `qgis/qgis` images for 3.34, 3.40, 3.44, and 4.2
-- Current QGIS application bundle on GitHub-hosted macOS through the prepared
-  Homebrew-backed job (pending its first remote run)
+- Current QGIS application bundle on GitHub-hosted macOS through the
+  Homebrew-backed job
 
 The v1.0.0 Windows validation reports weighted overall progress, natural yield
 patterns, pass-count headlands with planting/yield width matching, a live-checked
@@ -57,14 +57,12 @@ normalization, data-type controls, ordinary kriging, all five algorithms,
 complete-run consolidation, portable-review generation, streamed progress,
 cancellation, and `canceled_status=incomplete`.
 
-The Windows QGIS 3.44.6 headless suite reaches `QGIS_SMOKE_OK` after every
-assertion, then the QGIS test host raises a native access violation during
-`exitQgis()` teardown. A separate direct `qgis_process` complete run exits 0;
-the teardown fault occurs after validation and outside the isolated generator.
+Official QGIS 3.x container runs may reach `QGIS_SMOKE_OK` after every assertion
+and then raise a native Qt/PyQt fault during interpreter teardown. The CI runner
+accepts that shutdown-only condition only after the success marker; assertion
+failures still fail the job.
 
 ## Remaining release gates
 
-1. Confirm the first remote CI run, including the current-QGIS macOS job; do not
-   mark macOS compatibility complete until that runtime test passes.
-2. Submit version 1.0.0 to the official QGIS Plugin Repository after the
+1. Submit version 1.0.0 to the official QGIS Plugin Repository after the
    maintainer's OSGeo account is approved.
