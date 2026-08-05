@@ -1,0 +1,45 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Verify tag and source versions
+        run: python tools/verify_release_version.py "$GITHUB_REF_NAME"
+      - name: Test and compile
+        run: |
+          python -m unittest discover -s tests -p "test_*.py"
+          python -m compileall -q fake_farm_data_generator tests tools
+      - name: Build release assets
+        id: build
+        shell: bash
+        run: |
+          archive="$(python tools/package_qgis_plugin.py)"
+          python tools/validate_release_archive.py "$archive"
+          sha256sum "$archive" > "$archive.sha256"
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          archive="${{ steps.build.outputs.archive }}"
+          gh release create "$GITHUB_REF_NAME" \
+            "$archive" "$archive.sha256" \
+            "docs/demo/fake-farm-data-demo.zip" \
+            --title "Fake Farm Data Generator $GITHUB_REF_NAME" \
+            --notes-file RELEASE_NOTES.md

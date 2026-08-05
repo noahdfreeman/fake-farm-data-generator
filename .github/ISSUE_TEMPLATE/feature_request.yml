@@ -1,0 +1,24 @@
+name: Feature request
+description: Propose a fake-data workflow or compatibility improvement
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Testing or demonstration use case
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Fake-data boundary
+      options:
+        - label: The request keeps all generated artifacts visibly labeled as fake.
+          required: true

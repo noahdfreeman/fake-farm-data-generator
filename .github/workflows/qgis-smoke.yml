@@ -1,0 +1,70 @@
+name: QGIS compatibility smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "fake_farm_data_generator/**"
+      - "tests/**"
+      - "tools/run_qgis_smoke_linux.sh"
+      - "tools/run_qgis_smoke_macos.sh"
+      - ".github/workflows/qgis-smoke.yml"
+  schedule:
+    - cron: "17 7 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: QGIS ${{ matrix.qgis }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - qgis: "3.34"
+            image: qgis/qgis:3.34
+          - qgis: "3.40"
+            image: qgis/qgis:3.40
+          - qgis: "3.44"
+            image: qgis/qgis:3.44
+          - qgis: "4.2"
+            image: qgis/qgis:4.2
+    steps:
+      - uses: actions/checkout@v6
+      - name: Pull official QGIS image
+        run: docker pull "${{ matrix.image }}"
+      - name: Run complete plugin smoke test
+        shell: bash
+        run: |
+          docker run --rm \
+            --entrypoint /bin/bash \
+            -e GITHUB_WORKSPACE=/workspace \
+            -e HOME=/tmp/ffdg-home \
+            -e QT_QPA_PLATFORM=offscreen \
+            -e XDG_RUNTIME_DIR=/tmp/ffdg-runtime \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            "${{ matrix.image }}" \
+            /workspace/tools/run_qgis_smoke_linux.sh
+
+  macos-smoke:
+    name: Current QGIS on macOS
+    runs-on: macos-14
+    timeout-minutes: 55
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install the current QGIS application bundle
+        run: brew install --cask qgis
+      - name: Inspect the installed QGIS bundle
+        run: |
+          test -d /Applications/QGIS.app/Contents
+          find /Applications/QGIS.app/Contents/MacOS/bin -maxdepth 1 -name 'python*' -print
+      - name: Run complete plugin smoke test
+        run: bash tools/run_qgis_smoke_macos.sh

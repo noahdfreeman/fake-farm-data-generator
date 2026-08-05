@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit - ${{ matrix.os }} - Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Dependency-free tests
+        run: python -m unittest discover -s tests -p "test_*.py"
+      - name: Compile source
+        run: python -m compileall -q fake_farm_data_generator tests tools
+
+  package:
+    name: Package and validate plugin
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Verify release version
+        run: python tools/verify_release_version.py
+      - name: Build and validate archive
+        shell: bash
+        run: |
+          archive="$(python tools/package_qgis_plugin.py)"
+          python tools/validate_release_archive.py "$archive"
+          sha256sum "$archive" > "$archive.sha256"
+      - name: Upload plugin archive and checksum
+        uses: actions/upload-artifact@v6
+        with:
+          name: fake-farm-data-generator-${{ github.sha }}
+          path: |
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error

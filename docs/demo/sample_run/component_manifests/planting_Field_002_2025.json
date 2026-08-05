@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "fake_data": true,
+  "fake_warning": "FAKE DATA - NOT FOR AGRONOMIC DECISIONS",
+  "generator": "Fake Farm Data Generator 1.0.0",
+  "run_id": "20260805_161324_981105",
+  "created_at": "2026-08-05T16:13:24-04:00",
+  "master_seed": 80122248,
+  "used_selected_features": false,
+  "field_count": 1,
+  "total_area_acres": 70.0287,
+  "total_area_hectares": 28.3396,
+  "unit_system": "Imperial",
+  "review_max_features": 20000,
+  "timezone": "",
+  "years": [
+    2025
+  ],
+  "planting": {
+    "crop_name": "Corn",
+    "crop_provenance": {
+      "crop_name": "Corn",
+      "crop_code": null,
+      "crop_pct": 0.0,
+      "crop_source": "manual",
+      "crop_source_year": 2025,
+      "crop_resolution": null,
+      "crop_lookup_at": "2026-08-05T16:13:24-04:00",
+      "crop_overridden": false
+    },
+    "point_output": "Both",
+    "planter_width_feet": 20.0,
+    "row_units": 2,
+    "row_spacing_inches": 120.0,
+    "target_population_seeds_per_acre": 32000.0,
+    "population_minimum": 26000.0,
+    "population_maximum": 38000.0,
+    "nominal_seed_depth_inches": 2.0,
+    "nominal_speed_mph": 5.0,
+    "logging_interval_seconds": 20.0,
+    "headland_passes": 2,
+    "headland_width": 40.0,
+    "direction_mode": "Automatic",
+    "manual_bearing": null,
+    "variability_level": "Medium",
+    "variability_multiplier": 1.5,
+    "surface_created": true,
+    "surface_grid_size_feet": 250.0,
+    "surface_attributes": [
+      "Population",
+      "Speed",
+      "Seed Spacing",
+      "Seed Depth",
+      "Singulation",
+      "Spacing Quality",
+      "Skips",
+      "Ride Quality",
+      "Ground Contact",
+      "Furrow Moisture",
+      "Furrow Temperature",
+      "Uniform Furrow",
+      "Clean Furrow"
+    ],
+    "distance_unit": "ft",
+    "small_distance_unit": "in",
+    "speed_unit": "mph",
+    "population_unit": "seeds/acre"
+  },
+  "field_bearings": {
+    "East Field": 89.8
+  },
+  "outputs": [
+    "2025\\fake_planting_center_2025.gpkg",
+    "2025\\fake_planting_rows_2025.gpkg",
+    "2025\\fake_planting_surface_2025.gpkg"
+  ],
+  "estimates": {
+    "planter_center_positions": 1040,
+    "row_unit_points": 2080,
+    "planting_surface_cells": 49
+  },
+  "counts": {
+    "planter_center_points": 1052,
+    "row_unit_points": 2104,
+    "inactive_row_positions_skipped": 0,
+    "planting_surface_cells": 56
+  }
+}
