@@ -58,6 +58,7 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertIn("Contents/Resources", macos_text)
         self.assertIn('"$macos"/python3.*', macos_text)
         self.assertIn("Resources/Python.app/Contents/MacOS/Python", macos_text)
+        self.assertIn("processing/core/Processing.py", macos_text)
         self.assertIn("tests/qgis_smoke_test.py", macos_text)
         release = (workflows / "release.yml").read_text(encoding="utf-8")
         self.assertIn("tools/verify_release_version.py", release)

@@ -83,6 +83,15 @@ for candidate in \
     python_paths+=("$candidate")
   fi
 done
+
+# QGIS 4 macOS packages may place the Processing provider outside the older
+# Resources/python/plugins and MacOS/share/qgis/python/plugins locations.
+# Discover the provider by its stable module entry point and add its parent.
+while IFS= read -r plugin_parent; do
+  if [[ ! " ${python_paths[*]} " =~ " $plugin_parent " ]]; then
+    python_paths+=("$plugin_parent")
+  fi
+done < <(find "$contents" -type f -path '*/processing/core/Processing.py' -print 2>/dev/null | sed 's|/processing/core/Processing.py$||')
 joined_python_path="$(IFS=:; echo "${python_paths[*]}")"
 export PYTHONPATH="$joined_python_path${PYTHONPATH:+:$PYTHONPATH}"
 
@@ -115,5 +124,6 @@ fi
 
 echo "QGIS application: $qgis_app"
 echo "QGIS Python: $qgis_python"
+echo "QGIS Python path: $PYTHONPATH"
 "$qgis_python" --version
 "$qgis_python" "$workspace/tests/qgis_smoke_test.py"
