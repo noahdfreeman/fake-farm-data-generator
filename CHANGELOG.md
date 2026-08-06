@@ -2,6 +2,14 @@
 
 All notable changes to Fake Farm Data Generator are documented here.
 
+## 1.0.1 - 2026-08-06
+
+- Restricted the configurable CroplandCROS endpoint and service-provided raster downloads to credential-free HTTPS URLs before either network request is opened.
+- Documented that the seeded standard-library random generators are intentionally used for reproducible fake data and are not security or cryptographic randomness.
+- Replaced legacy unscoped PyQGIS enum aliases with their scoped equivalents for QGIS 4 and Qt 6 compatibility while retaining QGIS 3.28+ support.
+- Added regression coverage for unsafe crop-service URL schemes and validated the packaged plugin with Bandit, detect-secrets, the official PyQGIS 4 checker, and live QGIS 3.34/4.2 smoke tests.
+- Made isolated-worker field snapshots independent of the project CRS, ensured their temporary directory exists, and corrected writer-result handling so failures show the actual GDAL message instead of numeric error code `2`.
+
 ## 1.0.0 - 2026-08-05
 
 - Made field switching in the portable review reliable by selecting a field when the user clicks anywhere inside its polygon, in addition to the outline and dropdown controls.

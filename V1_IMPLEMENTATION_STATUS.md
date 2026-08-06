@@ -1,7 +1,7 @@
 # V1 implementation status
 
-Updated: 2026-08-05
-Current validated build: 1.0.0
+Updated: 2026-08-06
+Current validated build: 1.0.1
 
 This status is evidence-based. A requirement is marked complete only when the
 current source, tests, or packaged plugin demonstrates it.
@@ -27,7 +27,7 @@ current source, tests, or packaged plugin demonstrates it.
 | 15 | Permanent fake-data labeling | Complete | Schemas, manifests, README warning, review banner, and package tests |
 | 16 | Portable filtered split-comparison review | Complete | Bundled branded Leaflet review, compare-off startup, permanent clickable background boundaries, county-tool-style center handle, left-layer-only mode, single-field filtering/zoom, tenths-rounded area, and generated HTML/data assertions |
 | 17 | All soil points; sampled high-volume display only | Complete | Configurable review-limit tests and live displayed/total assertions |
-| 18 | Unit, integration, viewer, packaging, compatibility checks | Complete | 82 unit tests, Windows QGIS 3.44.6 full smoke assertions, and complete GitHub smoke runs on official QGIS 3.34/3.40/3.44/4.2 Linux images plus current macOS QGIS 4.0.3 |
+| 18 | Unit, integration, viewer, packaging, compatibility checks | Complete | 84 unit tests, clean Bandit/detect-secrets/PyQGIS 4 checks, a fresh-project invalid-CRS regression on exact QGIS 3.30.3, Windows QGIS 3.44.6 full smoke assertions, and complete smoke runs on official QGIS 3.34/3.40/3.44/4.2 Linux images plus current macOS QGIS 4.0.3 |
 | 19 | Installation, usage, schema, contribution, license, release docs | Complete | Dedicated Pages-ready documentation plus README, specification, changelog, contribution guide, license, templates, and release workflows |
 | 20 | GitHub Pages documentation and demo | Complete | Public repository, Pages workflow, screenshot documentation, downloadable example ZIP, and interactive all-generator demo are included in the V1 publication |
 
@@ -37,18 +37,18 @@ current source, tests, or packaged plugin demonstrates it.
 python -m unittest discover -s tests -p "test_*.py"
 python -m compileall -q fake_farm_data_generator tests tools
 python tools/package_qgis_plugin.py
-python tools/validate_release_archive.py dist/fake_farm_data_generator-1.0.0.zip
+python tools/validate_release_archive.py dist/fake_farm_data_generator-1.0.1.zip
 ```
 
 Live validation currently uses:
 
 - Windows QGIS 3.40.14 LTR through `python-qgis-ltr.bat`
 - Windows QGIS 3.44.6 through `python-qgis.bat`
-- Official Linux `qgis/qgis` images for 3.34, 3.40, 3.44, and 4.2
+- Official Linux `qgis/qgis` images for exact 3.30.3, 3.34, 3.40, 3.44, and 4.2
 - Current QGIS application bundle on GitHub-hosted macOS through the
   Homebrew-backed job
 
-The v1.0.0 Windows validation reports weighted overall progress, natural yield
+The v1.0.1 validation reports weighted overall progress, natural yield
 patterns, pass-count headlands with planting/yield width matching, a live-checked
 150-foot soil-point setback, permanent clickable background boundaries, tenths-rounded area, compare-off startup,
 the branded plugin/review logo, county-tool-style center comparison handle, left-layer-only non-compare mode,
@@ -64,5 +64,5 @@ failures still fail the job.
 
 ## Remaining release gates
 
-1. Submit version 1.0.0 to the official QGIS Plugin Repository after the
-   maintainer's OSGeo account is approved.
+1. Locally inspect version 1.0.1, then upload it as a new version to replace the
+   blocked 1.0.0 submission in the official QGIS Plugin Repository workflow.

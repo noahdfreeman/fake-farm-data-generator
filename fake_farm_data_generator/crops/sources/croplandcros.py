@@ -1,4 +1,4 @@
-﻿# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Bounded, cached access to the public USDA CroplandCROS ImageServer."""
 
 from __future__ import annotations
@@ -9,13 +9,25 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, urlopen
 
 from ..cache import CdlCache
 
 
 DEFAULT_ENDPOINT = "https://pdi.scinet.usda.gov/image/rest/services/CDL_WM/ImageServer"
+
+
+def _validated_https_url(value, label):
+    """Return a network URL after rejecting unsafe or ambiguous schemes."""
+
+    url = str(value or "").strip()
+    parsed = urlsplit(url)
+    if parsed.scheme.lower() != "https" or not parsed.netloc:
+        raise ValueError(f"{label} must use an HTTPS URL")
+    if parsed.username is not None or parsed.password is not None:
+        raise ValueError(f"{label} must not contain credentials")
+    return url
 
 
 class CroplandCrosSource:
@@ -25,9 +37,11 @@ class CroplandCrosSource:
         endpoint=DEFAULT_ENDPOINT,
         timeout_seconds=30,
         retries=1,
-        user_agent="FakeFarmDataGenerator/0.17",
+        user_agent="FakeFarmDataGenerator/1.0.1",
     ):
-        self.endpoint = str(endpoint).rstrip("/")
+        self.endpoint = _validated_https_url(
+            str(endpoint).rstrip("/"), "CroplandCROS endpoint"
+        )
         self.timeout_seconds = max(1, int(timeout_seconds))
         self.retries = max(0, int(retries))
         self.user_agent = user_agent
@@ -36,11 +50,15 @@ class CroplandCrosSource:
         self._available_years_cache = None
 
     def _json(self, url):
+        url = _validated_https_url(url, "CroplandCROS request URL")
         last_error = None
         for _attempt in range(self.retries + 1):
             try:
                 request = Request(url, headers={"User-Agent": self.user_agent})
-                with urlopen(request, timeout=self.timeout_seconds) as response:
+                # URL validation above restricts this audited network sink to HTTPS.
+                with urlopen(  # nosec B310
+                    request, timeout=self.timeout_seconds
+                ) as response:
                     payload = json.loads(response.read().decode("utf-8"))
                 if "error" in payload:
                     raise RuntimeError(payload["error"].get("message", "ArcGIS service error"))
@@ -150,6 +168,7 @@ class CroplandCrosSource:
         href = response.get("href")
         if not href:
             raise RuntimeError("CroplandCROS export did not return a raster URL")
+        href = _validated_https_url(href, "CroplandCROS raster URL")
 
         raster_path, metadata_path, request_metadata = self.cache.paths(
             self.endpoint, year, extent, nominal_pixel, service_version
@@ -162,7 +181,10 @@ class CroplandCrosSource:
             ) as temporary:
                 temporary_path = Path(temporary.name)
                 request = Request(href, headers={"User-Agent": self.user_agent})
-                with urlopen(request, timeout=self.timeout_seconds) as response_stream:
+                # The service-provided href is explicitly restricted to HTTPS above.
+                with urlopen(  # nosec B310
+                    request, timeout=self.timeout_seconds
+                ) as response_stream:
                     shutil.copyfileobj(response_stream, temporary)
             if temporary_path.stat().st_size <= 0:
                 raise RuntimeError("CroplandCROS returned an empty raster")

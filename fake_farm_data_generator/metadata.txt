@@ -1,7 +1,7 @@
 [general]
 name=Fake Farm Data Generator
 description=Create clearly labeled fake soil-test, planting, as-applied, and yield datasets for testing and demonstrations.
-version=1.0.0
+version=1.0.1
 qgisMinimumVersion=3.28
 qgisMaximumVersion=4.99
 author=Noah Freeman
@@ -16,4 +16,4 @@ repository=https://github.com/noahdfreeman/fake-farm-data-generator
 tracker=https://github.com/noahdfreeman/fake-farm-data-generator/issues
 tags=agriculture,fake data,soil test,planting,as-applied,yield,processing
 icon=resources/fake_farm_data_generator.png
-changelog=1.0.0 - First public release. Creates fake soil-test, planting, as-applied, and yield data; includes USDA crop suggestions, multi-format export, progress estimates, and a portable comparison review. See CHANGELOG.md for complete history.
+changelog=1.0.1 - Clears QGIS Plugin Repository security and QGIS 4 compatibility checks, and fixes complete-run startup when a fresh project has no valid project CRS yet. See CHANGELOG.md for complete history.

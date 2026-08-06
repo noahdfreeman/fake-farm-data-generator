@@ -43,8 +43,8 @@ Additional V1 features include:
 
 ## Install
 
-1. Download `fake_farm_data_generator-1.0.0.zip` from the
-   [V1 release](https://github.com/noahdfreeman/fake-farm-data-generator/releases/tag/v1.0.0).
+1. Download `fake_farm_data_generator-1.0.1.zip` from the
+   [latest release](https://github.com/noahdfreeman/fake-farm-data-generator/releases/latest).
 2. In QGIS, open **Plugins → Manage and Install Plugins → Install from ZIP**.
 3. Select the downloaded ZIP and approve the installation.
 4. Open the plugin from its toolbar icon, the **Plugins** menu, or
@@ -174,7 +174,7 @@ Dependency-free tests and packaging checks:
 python -m unittest discover -s tests -p "test_*.py"
 python -m compileall -q fake_farm_data_generator tests tools
 python tools/package_qgis_plugin.py
-python tools/validate_release_archive.py dist/fake_farm_data_generator-1.0.0.zip
+python tools/validate_release_archive.py dist/fake_farm_data_generator-1.0.1.zip
 ```
 
 QGIS integration tests require an installed QGIS Python runtime. GitHub Actions

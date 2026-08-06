@@ -49,7 +49,7 @@ def _write(layer, destination, driver, layer_options=None):
         options,
     )
     error_code = result[0]
-    if error_code != QgsVectorFileWriter.NoError:
+    if error_code != QgsVectorFileWriter.WriterError.NoError:
         message = result[1] if len(result) > 1 else "unknown writer error"
         raise RuntimeError(f"Could not export {destination}: {message}")
 
@@ -154,7 +154,7 @@ def export_vector_derivatives(run_folder, manifest, selected_formats, feedback=N
                 created.append(str(destination.relative_to(root)))
             if (
                 "CSV points" in selected
-                and QgsWkbTypes.geometryType(layer.wkbType()) == QgsWkbTypes.PointGeometry
+                and QgsWkbTypes.geometryType(layer.wkbType()) == QgsWkbTypes.GeometryType.PointGeometry
             ):
                 folder = root / year_folder / "csv"
                 folder.mkdir(parents=True, exist_ok=True)
@@ -163,7 +163,7 @@ def export_vector_derivatives(run_folder, manifest, selected_formats, feedback=N
                 created.append(str(destination.relative_to(root)))
             if (
                 "GeoTIFF surfaces" in selected
-                and QgsWkbTypes.geometryType(layer.wkbType()) == QgsWkbTypes.PolygonGeometry
+                and QgsWkbTypes.geometryType(layer.wkbType()) == QgsWkbTypes.GeometryType.PolygonGeometry
             ):
                 attribute = next(
                     (name for name in RASTER_ATTRIBUTE_PRIORITY if name in layer.fields().names()),

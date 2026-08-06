@@ -137,7 +137,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterVectorLayer(
                 self.INPUT,
                 self.tr("Field boundaries (selected features take precedence)"),
-                [QgsProcessing.TypeVectorPolygon],
+                [QgsProcessing.SourceType.TypeVectorPolygon],
             )
         )
         self.addParameter(
@@ -149,7 +149,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.CROP_YEAR,
                 self.tr("Operation year"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 current_year,
                 False,
                 1900,
@@ -193,7 +193,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
                 QgsProcessingParameterNumber(
                     name,
                     self.tr(label),
-                    QgsProcessingParameterNumber.Double,
+                    QgsProcessingParameterNumber.Type.Double,
                     default,
                     False,
                     0.0,
@@ -209,7 +209,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.EQUIPMENT_WIDTH,
                 self.tr("Equipment width (ft Imperial; m Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 60.0,
                 False,
                 1.0,
@@ -220,7 +220,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.NOMINAL_SPEED,
                 self.tr("Nominal speed (mph Imperial; km/h Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 10.0,
                 False,
                 0.1,
@@ -231,7 +231,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.LOGGING_INTERVAL,
                 self.tr("Logging interval (seconds)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 1.0,
                 False,
                 0.1,
@@ -242,7 +242,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.HEADLAND_PASSES,
                 self.tr("Headland passes"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 2,
                 False,
                 0.0,
@@ -262,7 +262,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.MANUAL_BEARING,
                 self.tr("Manual bearing (degrees clockwise from north)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 0.0,
                 False,
                 0.0,
@@ -280,7 +280,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.DATE_WINDOW,
                 self.tr("Random date window (+/- days)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 14,
                 False,
                 0,
@@ -316,7 +316,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.SURFACE_GRID_SIZE,
                 self.tr("Surface grid-cell size (ft Imperial; m Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 30.0,
                 False,
                 5.0,
@@ -327,7 +327,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.RANDOM_SEED,
                 self.tr("Master random seed (0 = random)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 0,
                 False,
                 0,
@@ -343,7 +343,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.REVIEW_MAX_FEATURES,
                 self.tr("Maximum displayed features per high-volume review layer"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 DEFAULT_REVIEW_MAX_FEATURES,
                 False,
                 MIN_REVIEW_MAX_FEATURES,
@@ -454,7 +454,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
             "generator_name": "Fake Farm Data Generator",
-            "generator_version": "1.0.0",
+            "generator_version": "1.0.1",
             "run_id": run["run_id"],
             "created_at": run["created_at"],
             "master_seed": run["master_seed"],
@@ -474,7 +474,8 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
 
     @staticmethod
     def _effects(point, bbox, seed, pass_number, rate_mode, target, minimum, maximum, nominal_speed, multiplier, headland):
-        rng = random.Random(seed)
+        # This seeded generator is part of reproducible fake data, not cryptography.
+        rng = random.Random(seed)  # nosec B311
         spatial = CreateFakePlantingAlgorithm._spatial_effect(point, bbox, seed)
         terrain = max(-1.0, min(1.0, 0.72 * spatial + 0.28 * math.sin(pass_number * 0.93)))
         pass_effect = math.sin(pass_number * 1.37 + (seed % 101) / 101.0)
@@ -643,14 +644,14 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
         point_path = year_folder / f"fake_applications_{year}.gpkg"
         surface_path = year_folder / f"fake_application_surface_{year}.gpkg"
         point_writer = CreateFakePlantingAlgorithm._writer(
-            point_path, point_fields, source_crs, QgsWkbTypes.Point, f"fake_applications_{year}"
+            point_path, point_fields, source_crs, QgsWkbTypes.Type.Point, f"fake_applications_{year}"
         )
         surface_writer = (
             CreateFakePlantingAlgorithm._writer(
                 surface_path,
                 surface_fields,
                 source_crs,
-                QgsWkbTypes.MultiPolygon,
+                QgsWkbTypes.Type.MultiPolygon,
                 f"fake_application_surface_{year}",
             )
             if create_surface
@@ -661,7 +662,7 @@ class CreateFakeApplicationsAlgorithm(QgsProcessingAlgorithm):
             "status": "running",
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
-            "generator": "Fake Farm Data Generator 1.0.0",
+            "generator": "Fake Farm Data Generator 1.0.1",
             "run_id": run_id,
             "created_at": created_at,
             "master_seed": master_seed,

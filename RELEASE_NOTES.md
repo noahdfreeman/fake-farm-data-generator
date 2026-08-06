@@ -19,7 +19,7 @@ datasets.
 
 ## Release assets
 
-- `fake_farm_data_generator-1.0.0.zip` — install through QGIS **Install from ZIP**.
+- `fake_farm_data_generator-1.0.1.zip` — install through QGIS **Install from ZIP**.
 - `Field_Examples.zip` — three GeoPackage field-boundary inputs for trying the
   plugin without supplying your own boundaries.
 - `fake-farm-data-demo.zip` — public two-field example with all four data types
@@ -28,9 +28,11 @@ datasets.
   four data types and all selected vector formats. Approximately 368 MB to
   download and 8.6 GB when extracted.
 - `Fake_Farm_Data_Example.zip.sha256` — checksum for the full example archive.
-- `fake_farm_data_generator-1.0.0.zip.sha256` — plugin archive checksum.
+- `fake_farm_data_generator-1.0.1.zip.sha256` — plugin archive checksum.
 
 > **FAKE DATA — FOR TESTING AND DEMONSTRATION ONLY — NOT FOR AGRONOMIC DECISIONS**
 
-An OSGeo account is pending. Publication in the official QGIS Plugin Repository
-will follow separately after account approval.
+Version 1.0.1 includes the QGIS Plugin Repository security-scan and QGIS 4
+compatibility remediation required after the blocked 1.0.0 submission. It also
+fixes complete-run startup in a fresh QGIS project whose project CRS has not yet
+been initialized; a basemap is not required before loading the example fields.

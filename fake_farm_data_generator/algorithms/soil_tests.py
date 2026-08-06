@@ -201,7 +201,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterVectorLayer(
                 self.INPUT,
                 self.tr("Field boundaries (selected features take precedence)"),
-                [QgsProcessing.TypeVectorPolygon],
+                [QgsProcessing.SourceType.TypeVectorPolygon],
             )
         )
         self.addParameter(
@@ -213,7 +213,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.FIRST_YEAR,
                 self.tr("First sampling year"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 current_year,
                 False,
                 1900,
@@ -224,7 +224,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.INTERVAL,
                 self.tr("Sampling interval (years)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 3,
                 False,
                 1,
@@ -252,7 +252,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.SAMPLE_DENSITY,
                 self.tr("Sample density (acres/point Imperial; ha/point Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 2.5,
                 False,
                 0.25,
@@ -263,7 +263,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.BOUNDARY_SETBACK,
                 self.tr("Sample-point setback from field boundary (ft Imperial; m Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 150.0,
                 False,
                 0.0,
@@ -274,7 +274,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.GRID_ROTATION,
                 self.tr("Regular-grid rotation (degrees)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 0.0,
                 False,
                 -180.0,
@@ -285,7 +285,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.GRID_OFFSET_X,
                 self.tr("Regular-grid X offset (% of spacing)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 0.0,
                 False,
                 -100.0,
@@ -296,7 +296,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.GRID_OFFSET_Y,
                 self.tr("Regular-grid Y offset (% of spacing)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 0.0,
                 False,
                 -100.0,
@@ -350,7 +350,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.DATE_WINDOW,
                 self.tr("Random date window (+/- days)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 14,
                 False,
                 0,
@@ -375,7 +375,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.SURFACE_GRID_SIZE,
                 self.tr("Surface grid-cell size (ft Imperial; m Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 30.0,
                 False,
                 5.0,
@@ -395,7 +395,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.IDW_POWER,
                 self.tr("IDW power"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 2.0,
                 False,
                 0.1,
@@ -406,7 +406,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.MAX_NEIGHBORS,
                 self.tr("Maximum interpolation neighbors"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 12,
                 False,
                 1,
@@ -426,7 +426,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.KRIGING_RANGE,
                 self.tr("Kriging practical range (ft Imperial; m Metric; 0 = automatic)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 0.0,
                 False,
                 0.0,
@@ -437,7 +437,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.KRIGING_NUGGET,
                 self.tr("Kriging relative nugget (0-1)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 0.0,
                 False,
                 0.0,
@@ -448,7 +448,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.RANDOM_SEED,
                 self.tr("Master random seed (0 = random)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 0,
                 False,
                 0,
@@ -464,7 +464,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.REVIEW_MAX_FEATURES,
                 self.tr("Maximum displayed features per high-volume review layer"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 DEFAULT_REVIEW_MAX_FEATURES,
                 False,
                 MIN_REVIEW_MAX_FEATURES,
@@ -534,7 +534,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
         options.driverName = "GPKG"
         options.layerName = layer_name
         options.fileEncoding = "UTF-8"
-        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
+        options.actionOnExistingFile = QgsVectorFileWriter.ActionOnExistingFile.CreateOrOverwriteFile
         writer = QgsVectorFileWriter.create(
             str(path),
             fields,
@@ -543,7 +543,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             QgsProject.instance().transformContext(),
             options,
         )
-        if writer.hasError() != QgsVectorFileWriter.NoError:
+        if writer.hasError() != QgsVectorFileWriter.WriterError.NoError:
             raise QgsProcessingException(
                 f"Could not create output GeoPackage {path}: {writer.errorMessage()}"
             )
@@ -635,7 +635,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
             "generator_name": "Fake Farm Data Generator",
-            "generator_version": "1.0.0",
+            "generator_version": "1.0.1",
             "run_id": run["run_id"],
             "created_at": run["created_at"],
             "master_seed": run["master_seed"],
@@ -925,7 +925,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
             "status": "running",
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
-            "generator": "Fake Farm Data Generator 1.0.0",
+            "generator": "Fake Farm Data Generator 1.0.1",
             "run_id": run_id,
             "created_at": created_at,
             "master_seed": master_seed,
@@ -993,7 +993,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
                     point_path,
                     point_fields,
                     source_crs,
-                    QgsWkbTypes.Point,
+                    QgsWkbTypes.Type.Point,
                     f"fake_soil_tests_{year}",
                 )
                 surface_writer = None
@@ -1005,7 +1005,7 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
                         surface_path,
                         surface_fields,
                         source_crs,
-                        QgsWkbTypes.MultiPolygon,
+                        QgsWkbTypes.Type.MultiPolygon,
                         f"fake_soil_surface_{year}",
                     )
 
@@ -1044,7 +1044,8 @@ class CreateFakeSoilTestsAlgorithm(QgsProcessingAlgorithm):
                             f"{units.distance_unit} soil-test boundary setback; reduce the setback"
                         )
                     child_seed = stable_seed(master_seed, field_id, year, "soil")
-                    rng = random.Random(child_seed)
+                    # Reproducible fake sampling placement; not cryptography.
+                    rng = random.Random(child_seed)  # nosec B311
                     target_points = max(1, int(math.ceil(area_display / density_acres)))
                     if placement == "Regular Grid":
                         points = self._regular_grid_points(
