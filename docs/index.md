@@ -45,7 +45,7 @@ and a draggable comparison divider.
 
 ## Current release status
 
-Version 1.0.0 includes weighted incremental progress, a pre-run runtime range and
+Version 1.0.1 includes weighted incremental progress, a pre-run runtime range and
 completion actions, clickable all-field background boundaries, compare-off
 startup, a data-opacity control, data-type-specific default attributes, and natural
 field-wide yield patterns with full-perimeter headland passes. It also places the

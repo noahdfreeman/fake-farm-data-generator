@@ -53,6 +53,7 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import (
     QgsApplication,
     QgsCoordinateTransform,
+    QgsCoordinateTransformContext,
     QgsDistanceArea,
     QgsFeature,
     QgsField,
@@ -402,7 +403,7 @@ class CompleteDatasetDialog(QDialog):
             layer is not None
             and hasattr(layer, "wkbType")
             and QgsWkbTypes.geometryType(layer.wkbType())
-            == QgsWkbTypes.PolygonGeometry
+            == QgsWkbTypes.GeometryType.PolygonGeometry
         )
 
     def _refresh_boundary_layers(self):
@@ -1377,7 +1378,7 @@ class CompleteDatasetDialog(QDialog):
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
             "generator_name": "Fake Farm Data Generator",
-            "generator_version": "1.0.0",
+            "generator_version": "1.0.1",
             "unit_system": self.unit_system.currentText(),
             "years": self._years_text(),
             "timezone": normalize_timezone_label(self._timezone_text()),
@@ -2059,26 +2060,45 @@ class CompleteDatasetDialog(QDialog):
 
     @staticmethod
     def _snapshot_generation_input(layer):
-        target = QgsProcessingUtils.generateTempFilename(
-            "fake_farm_complete_input.gpkg"
+        if layer is None or not layer.isValid():
+            raise ValueError("Could not prepare the selected fields: the input layer is invalid")
+        if not layer.crs().isValid():
+            raise ValueError("Could not prepare the selected fields: the input CRS is invalid")
+        target = Path(
+            QgsProcessingUtils.generateTempFilename(
+                "fake_farm_complete_input.gpkg"
+            )
         )
+        target.parent.mkdir(parents=True, exist_ok=True)
         options = QgsVectorFileWriter.SaveVectorOptions()
         options.driverName = "GPKG"
         options.layerName = "fake_field_boundaries"
-        error, actual_file, _actual_layer, error_message = (
+        options.actionOnExistingFile = (
+            QgsVectorFileWriter.ActionOnExistingFile.CreateOrOverwriteFile
+        )
+        error, error_message, actual_file, _actual_layer = (
             QgsVectorFileWriter.writeAsVectorFormatV3(
                 layer,
-                target,
-                QgsProject.instance().transformContext(),
+                str(target),
+                # The snapshot keeps the combined layer's CRS and performs no
+                # reprojection, so it must not depend on the project's CRS.
+                QgsCoordinateTransformContext(),
                 options,
             )
         )
         if int(error) != 0:
+            detail = str(error_message or "").strip() or f"writer error {int(error)}"
             raise ValueError(
                 "Could not prepare the selected fields for the isolated worker: "
-                + str(error_message or error)
+                + detail
             )
-        return str(actual_file or target)
+        snapshot = Path(str(actual_file or target))
+        if not snapshot.is_file():
+            raise ValueError(
+                "Could not prepare the selected fields for the isolated worker: "
+                f"QGIS reported success but did not create {snapshot}"
+            )
+        return str(snapshot)
 
     @staticmethod
     def _qgis_process_program():

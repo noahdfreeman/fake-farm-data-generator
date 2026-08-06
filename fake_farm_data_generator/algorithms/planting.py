@@ -164,7 +164,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterVectorLayer(
                 self.INPUT,
                 self.tr("Field boundaries (selected features take precedence)"),
-                [QgsProcessing.TypeVectorPolygon],
+                [QgsProcessing.SourceType.TypeVectorPolygon],
             )
         )
         self.addParameter(
@@ -180,7 +180,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.CROP_YEAR,
                 self.tr("Crop year"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 current_year,
                 False,
                 1900,
@@ -211,7 +211,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.PLANTER_WIDTH,
                 self.tr("Planter width (ft Imperial; m Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 40.0,
                 False,
                 1.0,
@@ -222,7 +222,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.ROW_UNITS,
                 self.tr("Number of row units"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 16,
                 False,
                 1,
@@ -233,7 +233,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.ROW_SPACING,
                 self.tr("Row spacing (in Imperial; cm Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 30.0,
                 False,
                 5.0,
@@ -244,7 +244,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.TARGET_POPULATION,
                 self.tr("Target population (seeds/acre Imperial; seeds/ha Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 32000.0,
                 False,
                 100.0,
@@ -255,7 +255,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.MIN_POPULATION,
                 self.tr("Minimum population (seeds/acre Imperial; seeds/ha Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 26000.0,
                 False,
                 0.0,
@@ -266,7 +266,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.MAX_POPULATION,
                 self.tr("Maximum population (seeds/acre Imperial; seeds/ha Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 38000.0,
                 False,
                 1.0,
@@ -277,7 +277,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.SEED_DEPTH,
                 self.tr("Nominal seed depth (in Imperial; cm Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 2.0,
                 False,
                 0.1,
@@ -288,7 +288,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.NOMINAL_SPEED,
                 self.tr("Nominal planting speed (mph Imperial; km/h Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 5.0,
                 False,
                 0.1,
@@ -299,7 +299,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.LOGGING_INTERVAL,
                 self.tr("Logging interval (seconds)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 1.0,
                 False,
                 0.1,
@@ -310,7 +310,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.HEADLAND_PASSES,
                 self.tr("Headland passes"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 2,
                 False,
                 0.0,
@@ -330,7 +330,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.MANUAL_BEARING,
                 self.tr("Manual bearing (degrees clockwise from north)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 0.0,
                 False,
                 0.0,
@@ -348,7 +348,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.DATE_WINDOW,
                 self.tr("Random date window (+/- days)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 14,
                 False,
                 0,
@@ -384,7 +384,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.SURFACE_GRID_SIZE,
                 self.tr("Surface grid-cell size (ft Imperial; m Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 30.0,
                 False,
                 5.0,
@@ -404,7 +404,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.RANDOM_SEED,
                 self.tr("Master random seed (0 = random)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 0,
                 False,
                 0,
@@ -420,7 +420,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.REVIEW_MAX_FEATURES,
                 self.tr("Maximum displayed features per high-volume review layer"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 DEFAULT_REVIEW_MAX_FEATURES,
                 False,
                 MIN_REVIEW_MAX_FEATURES,
@@ -472,7 +472,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
         options.driverName = "GPKG"
         options.layerName = layer_name
         options.fileEncoding = "UTF-8"
-        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
+        options.actionOnExistingFile = QgsVectorFileWriter.ActionOnExistingFile.CreateOrOverwriteFile
         writer = QgsVectorFileWriter.create(
             str(path),
             fields,
@@ -481,7 +481,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             QgsProject.instance().transformContext(),
             options,
         )
-        if writer.hasError() != QgsVectorFileWriter.NoError:
+        if writer.hasError() != QgsVectorFileWriter.WriterError.NoError:
             raise QgsProcessingException(
                 f"Could not create output GeoPackage {path}: {writer.errorMessage()}"
             )
@@ -591,7 +591,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
             "generator_name": "Fake Farm Data Generator",
-            "generator_version": "1.0.0",
+            "generator_version": "1.0.1",
             "run_id": run["run_id"],
             "created_at": run["created_at"],
             "master_seed": run["master_seed"],
@@ -674,7 +674,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
                 direction_y * (along_max + margin) + normal_y * offset,
             )
             clipped = QgsGeometry.fromPolylineXY([start, end]).intersection(geometry)
-            if clipped.isEmpty() or QgsWkbTypes.geometryType(clipped.wkbType()) != QgsWkbTypes.LineGeometry:
+            if clipped.isEmpty() or QgsWkbTypes.geometryType(clipped.wkbType()) != QgsWkbTypes.GeometryType.LineGeometry:
                 continue
             parts = clipped.asMultiPolyline() if clipped.isMultipart() else [clipped.asPolyline()]
             for part in parts:
@@ -786,7 +786,8 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
         is_headland,
         units,
     ):
-        rng = random.Random(point_seed)
+        # This seeded generator is part of reproducible fake data, not cryptography.
+        rng = random.Random(point_seed)  # nosec B311
         spatial = cls._spatial_effect(point, bbox, point_seed)
         pass_effect = math.sin(pass_number * 1.618 + (point_seed % 97) / 97.0)
         population_factor = (
@@ -1116,7 +1117,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
                 center_path,
                 point_fields,
                 source_crs,
-                QgsWkbTypes.Point,
+                QgsWkbTypes.Type.Point,
                 f"fake_planting_center_{year}",
             )
             if create_center_output
@@ -1127,7 +1128,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
                 row_path,
                 point_fields,
                 source_crs,
-                QgsWkbTypes.Point,
+                QgsWkbTypes.Type.Point,
                 f"fake_planting_rows_{year}",
             )
             if create_row_output
@@ -1139,7 +1140,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
                 surface_path,
                 surface_fields,
                 source_crs,
-                QgsWkbTypes.MultiPolygon,
+                QgsWkbTypes.Type.MultiPolygon,
                 f"fake_planting_surface_{year}",
             )
             if create_surface
@@ -1150,7 +1151,7 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
             "status": "running",
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
-            "generator": "Fake Farm Data Generator 1.0.0",
+            "generator": "Fake Farm Data Generator 1.0.1",
             "run_id": run_id,
             "created_at": created_at,
             "master_seed": master_seed,
@@ -1352,7 +1353,8 @@ class CreateFakePlantingAlgorithm(QgsProcessingAlgorithm):
                                     manifest["counts"]["inactive_row_positions_skipped"] += 1
                                     continue
                                 row_seed = stable_seed(point_seed, "row", row_number)
-                                row_rng = random.Random(row_seed)
+                                # Reproducible fake row variation; not cryptography.
+                                row_rng = random.Random(row_seed)  # nosec B311
                                 row_values = dict(values)
                                 row_values["population"] = max(
                                     minimum_population,

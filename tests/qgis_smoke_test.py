@@ -16,6 +16,7 @@ from pathlib import Path
 
 from qgis.core import (
     QgsApplication,
+    QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
     QgsGeometry,
     QgsProcessingFeedback,
@@ -393,6 +394,27 @@ def main() -> None:
             or "OUTPUT_FORMATS=0" in worker_arguments
         ):
             raise AssertionError("Isolated qgis_process worker command is invalid")
+        project = QgsProject.instance()
+        original_project_crs = project.crs()
+        project.setCrs(QgsCoordinateReferenceSystem())
+        try:
+            snapshot_path = background_dialog._snapshot_generation_input(
+                background_layer
+            )
+        finally:
+            project.setCrs(original_project_crs)
+        snapshot_layer = QgsVectorLayer(
+            snapshot_path, "fresh_project_worker_snapshot", "ogr"
+        )
+        if (
+            not snapshot_layer.isValid()
+            or snapshot_layer.featureCount() != background_layer.featureCount()
+            or snapshot_layer.crs() != background_layer.crs()
+        ):
+            raise AssertionError(
+                "Fresh-project worker snapshot did not preserve fields and CRS"
+            )
+        del snapshot_layer
         if os.environ.get("FAKE_FARM_TEST_ISOLATED_WORKER") == "1":
             original_information = QMessageBox.information
             original_critical = QMessageBox.critical
@@ -432,7 +454,6 @@ def main() -> None:
         del background_layer
 
         review_layer = QgsVectorLayer(str(fixture), "crop_review_fields", "ogr")
-        from qgis.core import QgsProject
         from fake_farm_data_generator.crops.resolver import CropAssignment
         from fake_farm_data_generator.crops.manager import (
             _rotation_assignment,
@@ -1853,8 +1874,6 @@ def main() -> None:
             flush=True,
         )
     finally:
-        from qgis.core import QgsProject
-
         QgsProject.instance().clear()
         if provider is not None:
             QgsApplication.processingRegistry().removeProvider(provider)

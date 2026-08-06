@@ -168,7 +168,8 @@ def deterministic_operation_date(
 
     base = date(year, month, day)
     window = max(0, int(window_days))
-    rng = random.Random(seed)
+    # This seeded generator is part of reproducible fake data, not cryptography.
+    rng = random.Random(seed)  # nosec B311
     return base + timedelta(days=rng.randint(-window, window))
 
 

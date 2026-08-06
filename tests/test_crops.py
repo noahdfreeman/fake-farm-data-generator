@@ -107,6 +107,11 @@ class CropCacheTests(unittest.TestCase):
 
 
 class CroplandCrosAdapterTests(unittest.TestCase):
+    def test_source_rejects_non_https_endpoint(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(ValueError, "endpoint must use an HTTPS URL"):
+                CroplandCrosSource(temporary, endpoint="file:///tmp/ImageServer")
+
     def test_fetch_uses_cached_raster_without_export_request(self):
         with tempfile.TemporaryDirectory() as temporary:
             source = CroplandCrosSource(temporary, endpoint="https://example.test/ImageServer")
@@ -135,6 +140,31 @@ class CroplandCrosAdapterTests(unittest.TestCase):
             ), patch.object(source, "available_years", return_value=[2023, 2024]):
                 with self.assertRaisesRegex(ValueError, "year 2025 is unavailable"):
                     source.fetch(2025, (1, 2, 301, 302))
+
+    def test_fetch_rejects_non_https_raster_url_before_open(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = CroplandCrosSource(
+                temporary, endpoint="https://example.test/ImageServer"
+            )
+            with patch.object(
+                source,
+                "service_info",
+                return_value={
+                    "currentVersion": 12.1,
+                    "pixelSizeX": 30,
+                    "maxImageWidth": 4096,
+                    "maxImageHeight": 4096,
+                },
+            ), patch.object(
+                source, "available_years", return_value=[2024]
+            ), patch.object(
+                source, "_json", return_value={"href": "file:///etc/passwd"}
+            ), patch(
+                "fake_farm_data_generator.crops.sources.croplandcros.urlopen"
+            ) as opener:
+                with self.assertRaisesRegex(ValueError, "raster URL must use an HTTPS URL"):
+                    source.fetch(2024, (1, 2, 301, 302))
+            opener.assert_not_called()
 
 
 if __name__ == "__main__":

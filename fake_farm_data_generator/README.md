@@ -2,7 +2,7 @@
 
 This directory is the installable QGIS plugin package.
 
-Version 1.0.0 provides all four individual generators and a selection-first seven-tab complete workflow. The dialog accepts multiple checked boundary layers, explicit data-type choices, ten checkable crop-year buttons, a US Central Time default with an IANA timezone selector, editable field-year crops, and crop-specific planting tabs. It opens from the Processing Toolbox or the branded logo button in the plugin toolbar/menu.
+Version 1.0.1 provides all four individual generators and a selection-first seven-tab complete workflow. The dialog accepts multiple checked boundary layers, explicit data-type choices, ten checkable crop-year buttons, a US Central Time default with an IANA timezone selector, editable field-year crops, and crop-specific planting tabs. It opens from the Processing Toolbox or the branded logo button in the plugin toolbar/menu.
 
 The unit-system selector defaults to Imperial. Metric runs use hectares, meters/centimeters, km/h, seeds/ha, kg/ha, and crop-appropriate t/ha or kg/ha yield units. The complete-run tool supplies converted metric defaults to every child generator; each output feature and manifest records its unit system and explicit measurement units.
 
@@ -79,4 +79,4 @@ The General tab can map input columns to field ID, field name, farm name, and gr
 
 Every complete run retains its selected polygons in `fake_field_boundaries.gpkg`. The layer records mapped identities, acres/hectares, and `boundary_source=user_provided`, and is available in the portable comparison viewer and selected derivative formats.
 
-Version 1.0.0 includes incremental weighted progress, runtime estimates and completion actions, permanent background boundaries, compare-off review startup, and restored natural yield patterns with end rows. Complete runs continue to execute in a separate `qgis_process` worker so a worker-level failure cannot terminate desktop QGIS.
+Version 1.0.1 includes incremental weighted progress, runtime estimates and completion actions, permanent background boundaries, compare-off review startup, restored natural yield patterns with end rows, HTTPS-only crop-service requests, and scoped QGIS enums. Complete runs continue to execute in a separate `qgis_process` worker so a worker-level failure cannot terminate desktop QGIS.

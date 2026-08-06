@@ -10,12 +10,12 @@ from tools.verify_release_version import (
 
 class ReleaseVersionTests(unittest.TestCase):
     def test_metadata_version_and_tag_normalization(self):
-        self.assertEqual(metadata_version(), "1.0.0")
-        self.assertEqual(normalize_tag("v1.0.0"), "1.0.0")
-        self.assertEqual(normalize_tag("1.0.0"), "1.0.0")
+        self.assertEqual(metadata_version(), "1.0.1")
+        self.assertEqual(normalize_tag("v1.0.1"), "1.0.1")
+        self.assertEqual(normalize_tag("1.0.1"), "1.0.1")
 
     def test_current_release_files_agree(self):
-        self.assertEqual(verify("v1.0.0"), "1.0.0")
+        self.assertEqual(verify("v1.0.1"), "1.0.1")
 
     def test_mismatched_tag_fails(self):
         with self.assertRaisesRegex(ValueError, "does not match metadata"):
@@ -28,10 +28,10 @@ class ReleaseVersionTests(unittest.TestCase):
         }
         tag_environment = {
             "GITHUB_REF_TYPE": "tag",
-            "GITHUB_REF_NAME": "v1.0.0",
+            "GITHUB_REF_NAME": "v1.0.1",
         }
         self.assertEqual(requested_tag([], branch_environment), "")
-        self.assertEqual(requested_tag([], tag_environment), "v1.0.0")
+        self.assertEqual(requested_tag([], tag_environment), "v1.0.1")
         self.assertEqual(requested_tag(["v2.0.0"], branch_environment), "v2.0.0")
 
 

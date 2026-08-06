@@ -146,7 +146,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterVectorLayer(
                 self.INPUT,
                 self.tr("Field boundaries (selected features take precedence)"),
-                [QgsProcessing.TypeVectorPolygon],
+                [QgsProcessing.SourceType.TypeVectorPolygon],
             )
         )
         self.addParameter(
@@ -158,7 +158,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.CROP_YEAR,
                 self.tr("Crop year"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 current_year,
                 False,
                 1900,
@@ -193,7 +193,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
                 QgsProcessingParameterNumber(
                     name,
                     self.tr(label),
-                    QgsProcessingParameterNumber.Double,
+                    QgsProcessingParameterNumber.Type.Double,
                     default,
                     False,
                     0.0,
@@ -210,7 +210,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
                 QgsProcessingParameterNumber(
                     name,
                     self.tr(label),
-                    QgsProcessingParameterNumber.Double,
+                    QgsProcessingParameterNumber.Type.Double,
                     default,
                     False,
                     minimum,
@@ -221,7 +221,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.HEADLAND_PASSES,
                 self.tr("Headland passes"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 3,
                 False,
                 0,
@@ -241,7 +241,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.MANUAL_BEARING,
                 self.tr("Manual bearing (degrees clockwise from north)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 0.0,
                 False,
                 0.0,
@@ -259,7 +259,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.DATE_WINDOW,
                 self.tr("Random date window (+/- days)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 14,
                 False,
                 0,
@@ -293,7 +293,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.SURFACE_GRID_SIZE,
                 self.tr("Surface grid-cell size (ft Imperial; m Metric)"),
-                QgsProcessingParameterNumber.Double,
+                QgsProcessingParameterNumber.Type.Double,
                 30.0,
                 False,
                 5.0,
@@ -304,7 +304,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.RANDOM_SEED,
                 self.tr("Master random seed (0 = random)"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 0,
                 False,
                 0,
@@ -320,7 +320,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.REVIEW_MAX_FEATURES,
                 self.tr("Maximum displayed features per high-volume review layer"),
-                QgsProcessingParameterNumber.Integer,
+                QgsProcessingParameterNumber.Type.Integer,
                 DEFAULT_REVIEW_MAX_FEATURES,
                 False,
                 MIN_REVIEW_MAX_FEATURES,
@@ -433,7 +433,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
             "generator_name": "Fake Farm Data Generator",
-            "generator_version": "1.0.0",
+            "generator_version": "1.0.1",
             "run_id": run["run_id"],
             "created_at": run["created_at"],
             "master_seed": run["master_seed"],
@@ -454,7 +454,10 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
 
     @staticmethod
     def _field_pattern(field_seed, minimum_yield, maximum_yield):
-        field_rng = random.Random(stable_seed(field_seed, "natural_yield_pattern"))
+        # This seeded generator is part of reproducible fake data, not cryptography.
+        field_rng = random.Random(  # nosec B311
+            stable_seed(field_seed, "natural_yield_pattern")
+        )
         range_width = maximum_yield - minimum_yield
         return (
             field_rng.uniform(
@@ -469,7 +472,8 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
     def _values(point, bbox, sample_seed, field_pattern, minimum_yield, maximum_yield, minimum_moisture, maximum_moisture, standard_moisture, nominal_speed, variability_level, headland, headland_penalty, noise_scale=1.0):
         """Replicate the original smooth field pattern with deterministic noise."""
 
-        rng = random.Random(sample_seed)
+        # This seeded generator is part of reproducible fake data, not cryptography.
+        rng = random.Random(sample_seed)  # nosec B311
         range_width = maximum_yield - minimum_yield
         field_base_yield, phase_x, phase_y = field_pattern
         width = max(0.001, bbox.width())
@@ -661,14 +665,14 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
         point_path = year_folder / f"fake_yield_points_{year}.gpkg"
         surface_path = year_folder / f"fake_yield_surface_{year}.gpkg"
         point_writer = CreateFakePlantingAlgorithm._writer(
-            point_path, point_fields, source_crs, QgsWkbTypes.Point, f"fake_yield_points_{year}"
+            point_path, point_fields, source_crs, QgsWkbTypes.Type.Point, f"fake_yield_points_{year}"
         )
         surface_writer = (
             CreateFakePlantingAlgorithm._writer(
                 surface_path,
                 surface_fields,
                 source_crs,
-                QgsWkbTypes.MultiPolygon,
+                QgsWkbTypes.Type.MultiPolygon,
                 f"fake_yield_surface_{year}",
             )
             if create_surface
@@ -679,7 +683,7 @@ class CreateFakeYieldAlgorithm(QgsProcessingAlgorithm):
             "status": "running",
             "fake_data": True,
             "fake_warning": FAKE_WARNING,
-            "generator": "Fake Farm Data Generator 1.0.0",
+            "generator": "Fake Farm Data Generator 1.0.1",
             "run_id": run_id,
             "created_at": created_at,
             "master_seed": master_seed,
