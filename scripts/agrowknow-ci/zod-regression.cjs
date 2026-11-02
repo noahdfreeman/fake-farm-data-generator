@@ -1,3 +1,4 @@
+/* eslint @typescript-eslint/no-require-imports: "off" -- This regression exercises both CommonJS and ESM package entry points. */
 const assert = require('node:assert/strict');
 const { createRequire } = require('node:module');
 const path = require('node:path');
