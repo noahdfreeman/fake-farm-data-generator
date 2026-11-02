@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "product": "fake-farm-data",
+  "mode": "integrated",
+  "ciWorkflow": ".github/workflows/ci.yml",
+  "requiredChecks": ["AgrowKnow CI passed"],
+  "publicEnv": {},
+  "commands": {
+    "install": [],
+    "check": [],
+    "audit": [],
+    "build": [],
+    "browser": [],
+    "native": []
+  },
+  "artifact": null,
+  "release": {
+    "provider": "none",
+    "origin": "",
+    "requiredEnv": [],
+    "recovery": "forward-only"
+  }
+}

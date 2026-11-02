@@ -9,6 +9,8 @@ permissions:
   contents: read
 
 jobs:
+  framework:
+    uses: ./.github/workflows/agrowknow-checks.yml
   unit:
     name: Unit - ${{ matrix.os }} - Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
@@ -52,3 +54,14 @@ jobs:
             dist/*.zip
             dist/*.sha256
           if-no-files-found: error
+
+  gate:
+    name: AgrowKnow CI passed
+    if: always()
+    needs: [framework, unit, package]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require every check
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: node -e 'for (const job of Object.values(JSON.parse(process.env.RESULTS))) if (job.result !== "success") process.exitCode = 1'
