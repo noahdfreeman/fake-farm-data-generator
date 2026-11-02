@@ -1,0 +1,15 @@
+{
+  "package": "zod",
+  "version": "3.25.76",
+  "expires": "2026-12-02T00:00:00Z",
+  "patch": "patches/zod@3.25.76.patch",
+  "patchSha256": "a7b8f30504f72aaa821684ce9f186f8ccedc11a7b0c62646f94b1e79007a0851",
+  "files": {
+    "v3/types.cjs": "6147237850fc59333d1a07f2860dce0cf18ef8595f013efc4a0ad39e085f2941",
+    "v3/types.js": "da361acb575f7d81c7e557ffc9b798dd4d64f37275eb5f19fb6c8a8e6cd7daa0",
+    "src/v3/types.ts": "d940db7321fb1ac576803865de78229534010dd8ae4786c270090080ae49b98a",
+    "v4/core/schemas.cjs": "36cade799b5c5f3efa22f4d0710156448c5c58e3b68128bd38542f423690dba6",
+    "v4/core/schemas.js": "c3773bb1c859516bf1013c63d63a92991607137fb3176b4117ff12ada28e877d",
+    "src/v4/core/schemas.ts": "e21e9f988d2d6e5c31e04fed60a0a15956ba751c9193ba578785796343466003"
+  }
+}

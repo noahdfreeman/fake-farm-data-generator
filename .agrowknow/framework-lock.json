@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "source": "noahdfreeman/agrowknow-apps-platform:packages/ci-cd",
+  "files": {
+    "scripts/agrowknow-ci/config.mjs": "9fe15f6b4b97be745ac236f5bc7ea089eb1f9cb96a1f6b20883e76dffaaaba72",
+    "scripts/agrowknow-ci/artifact.mjs": "88f88a69cf9ef4a9158b630741fd83fcf58e6593266fbedb834fc4928eae74f0",
+    "scripts/agrowknow-ci/run.mjs": "6c1cc3033e8fe9bcce4c42fc59bff97ff0a1bb2e70e82216eac66f8c2c126b43",
+    "scripts/agrowknow-ci/deploy.mjs": "0fac078e1ed6ed452e4e62a8a181e3b66c8a636c6a5df34e3796397d13843fa4",
+    "scripts/agrowknow-ci/audit.mjs": "c22211e1c3ea2397e3131018193e49f499e9505a8deb27821efe1257cb021146",
+    "scripts/agrowknow-ci/zod-regression.cjs": "e25778142fd3b0c0b536b81bb480e397258f1755ebd341bd863d4222e0d553e4",
+    "scripts/agrowknow-ci/zod-mitigation.json": "619945a9dd4ac2d57766f9a1d34b28898fe5a42c5f5695b58c2d3bab4678f311",
+    ".github/workflows/agrowknow-checks.yml": "6b1e00ee512f277d905b35c03bb76624dd67d6ac728e6756ded4eb9a27f01d99",
+    ".agrowknow/ci.json": "c3a55121da807534369ed2c189d5ec03bbb201dd03a914a4f15a75cef419ae55"
+  }
+}
