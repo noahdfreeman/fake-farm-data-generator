@@ -3,7 +3,7 @@
   "source": "noahdfreeman/agrowknow-apps-platform:packages/ci-cd",
   "files": {
     "scripts/agrowknow-ci/config.mjs": "9fe15f6b4b97be745ac236f5bc7ea089eb1f9cb96a1f6b20883e76dffaaaba72",
-    "scripts/agrowknow-ci/artifact.mjs": "88f88a69cf9ef4a9158b630741fd83fcf58e6593266fbedb834fc4928eae74f0",
+    "scripts/agrowknow-ci/artifact.mjs": "b9162520cdfbbad45fc05d96fdd0ba7580840a0dd0e61c85f4e2cec38f5645a5",
     "scripts/agrowknow-ci/run.mjs": "6c1cc3033e8fe9bcce4c42fc59bff97ff0a1bb2e70e82216eac66f8c2c126b43",
     "scripts/agrowknow-ci/deploy.mjs": "0fac078e1ed6ed452e4e62a8a181e3b66c8a636c6a5df34e3796397d13843fa4",
     "scripts/agrowknow-ci/audit.mjs": "c22211e1c3ea2397e3131018193e49f499e9505a8deb27821efe1257cb021146",
