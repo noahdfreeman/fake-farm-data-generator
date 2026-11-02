@@ -81,8 +81,28 @@ export async function verify(directory, expected) {
 export async function verifyRemote(base, manifest, request = fetch) {
   const url = new URL(base);
   assert.equal(url.protocol, 'https:', 'Remote verification requires HTTPS');
-  const options = { redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(30000) };
-  const response = await request(new URL(manifestName, url), options);
+  const get = async (address) => {
+    let current = new URL(address);
+    for (let hop = 0; hop < 6; hop++) {
+      const result = await request(current, {
+        redirect: 'manual',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(30000),
+      });
+      if (![301, 302, 303, 307, 308].includes(result.status)) return result;
+      const location = result.headers?.get('location');
+      assert(location, 'Redirect has no destination');
+      const next = new URL(location, current);
+      assert.equal(
+        next.origin,
+        url.origin,
+        'Release verification cannot follow a foreign redirect',
+      );
+      current = next;
+    }
+    throw new Error('Release verification redirect limit exceeded');
+  };
+  const response = await get(new URL(manifestName, url));
   assert.equal(response.status, 200, 'Release receipt unavailable');
   assert.deepEqual(await response.json(), manifest, 'Remote release receipt differs');
   const entries = Object.entries(manifest.files).filter(
@@ -96,7 +116,7 @@ export async function verifyRemote(base, manifest, request = fetch) {
         relativePath(name);
         const fileURL = new URL(name.split('/').map(encodeURIComponent).join('/'), url);
         fileURL.searchParams.set('agrowknow_release', manifest.commit);
-        const result = await request(fileURL, { ...options, signal: AbortSignal.timeout(30000) });
+        const result = await get(fileURL);
         assert.equal(result.status, 200, `Remote file unavailable: ${name}`);
         const bytes = Buffer.from(await result.arrayBuffer());
         assert.equal(digest(bytes), expected.sha256, `Remote bytes differ: ${name}`);
